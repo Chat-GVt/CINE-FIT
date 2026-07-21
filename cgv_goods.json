@@ -1,0 +1,574 @@
+{
+  "meta": {
+    "version": "1.0",
+    "snapshot_date": "2026-07-14",
+    "source": "CGV 팝콘팩토리 / 씨네펍 캐릭터굿즈",
+    "total_items": 41,
+    "warning": "굿즈는 재고 소진·기간 종료가 빠릅니다. 발표 직전 재확인 필요.",
+    "note_on_dedup": "팝콘팩토리·씨네펍 중복 노출 항목(방탄 아미음료컵, 정국 음료컵·프로그램북, 세븐틴 음료컵·틴버킷)은 store 배열로 통합했습니다. 원본에 우비핑구 키링(분홍)이 2번, 정국 프로그램북·세븐틴 음료컵·세븐틴 틴버킷이 각각 2번 등장하나 중복 제거.",
+    "recommendation_logic": {
+      "설명": "굿즈는 취향 벡터로 추천하지 않습니다. 영화 IP 직접 매칭입니다.",
+      "rule": "goods.linked_movie == 추천영화.title → 해당 굿즈를 추천",
+      "fallback": "linked_movie가 null이거나 우리 상영작과 일치하지 않으면 추천하지 않음",
+      "표시위치": "추천 카드 하단 '지금 CGV에서 판매 중인 굿즈' 섹션",
+      "why_separate": "cgv_snacks.json과 파일을 나눈 이유: 굿즈에는 noise_level·pairing_vector가 의미 없습니다. 우디 인형이 시끄럽진 않으니까요."
+    },
+    "our_movies_with_goods": [
+      "모아나",
+      "토이 스토리 5",
+      "사랑의 하츄핑: 고래보석의 전설"
+    ],
+    "note": "사랑의 하츄핑 굿즈는 '하츄핑 키링 음료세트'(PF-DRK-019)가 cgv_snacks.json에 포함되어 있습니다. 이 파일엔 별도 굿즈 단품이 없습니다."
+  },
+  "items": [
+    {
+      "item_id": "GD-MOA-001",
+      "name": "모아나 심장목걸이 키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "키링",
+      "description": "당신의 용기를 빛내줄 심장 목걸이 ❤️",
+      "price": 14500,
+      "linked_movie": "모아나",
+      "is_limited": true,
+      "note": "★ 우리 상영작 연계. ILSP·ILFP 유형 추천 시 노출"
+    },
+    {
+      "item_id": "GD-MOA-002",
+      "name": "모아나 카카모라 인형키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "인형키링",
+      "description": "귀여움이 굴러온다! 카카모라! 🥥",
+      "price": 10500,
+      "linked_movie": "모아나",
+      "is_limited": true,
+      "note": "★ 우리 상영작 연계. 발표 데모 모아나 플로우 핵심 굿즈"
+    },
+    {
+      "item_id": "GD-MOA-003",
+      "name": "모아나 푸아 인형키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "인형키링",
+      "description": "모아나의 사랑스러운 친구, 푸아 🐷",
+      "price": 10500,
+      "linked_movie": "모아나",
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-TOY-001",
+      "name": "포키 웨딩키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "키링",
+      "description": "보니의 소중한 친구, 포키 ❤️",
+      "price": 10500,
+      "linked_movie": "토이 스토리 5",
+      "is_limited": true,
+      "note": "★ 우리 상영작 연계"
+    },
+    {
+      "item_id": "GD-TOY-002",
+      "name": "우디 보안관 키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "키링",
+      "description": "우디의 상징, 보안관 키링 ⭐",
+      "price": 13000,
+      "linked_movie": "토이 스토리 5",
+      "is_limited": true,
+      "note": "★ 우리 상영작 연계"
+    },
+    {
+      "item_id": "GD-TOY-003",
+      "name": "우디 인형 (40cm)",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "인형",
+      "description": "40cm 빅사이즈 우디! 💛",
+      "price": 19500,
+      "linked_movie": "토이 스토리 5",
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-YOS-001",
+      "name": "요시 팝콘통",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "팝콘통",
+      "description": "요시와 함께 즐기는 특별한 팝콘 타임! 🍿",
+      "price": 29000,
+      "linked_movie": "마리오",
+      "is_limited": true,
+      "note": "일반 판매상품 (팝콘 미포함)"
+    },
+    {
+      "item_id": "GD-MAR-001",
+      "name": "마리오 주렁주렁키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "키링",
+      "description": "마리오, 요시 랜덤!",
+      "price": 4500,
+      "linked_movie": "마리오",
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-ZOO-001",
+      "name": "주토피아 캐릭터우산",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "우산",
+      "description": "주토피아 캐릭터우산",
+      "price": 16000,
+      "linked_movie": "주토피아",
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-ZOO-002",
+      "name": "주토피아 뱃지",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "뱃지",
+      "description": "8종 랜덤 무빙뱃지!",
+      "price": 6900,
+      "linked_movie": "주토피아",
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-AOT-001",
+      "name": "진격의거인 글리터 캔뱃지 1박스 (분홍)",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "뱃지",
+      "description": "캔뱃지 8개를 한 번에!",
+      "price": 68000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-AOT-002",
+      "name": "진격의거인 캔버스 캔뱃지 1박스 (녹색)",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "뱃지",
+      "description": "캔뱃지 6개를 한 번에!",
+      "price": 42000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-AOT-003",
+      "name": "진격의거인 글리터 캔뱃지 낱개 (분홍)",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "뱃지",
+      "description": "8종 랜덤 캔뱃지!",
+      "price": 8500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-AOT-004",
+      "name": "진격의거인 캔버스 캔뱃지 낱개 (녹색)",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "뱃지",
+      "description": "6종 랜덤 캔뱃지!",
+      "price": 7000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-SHN-001",
+      "name": "짱구 댄서즈 피규어",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "피규어",
+      "description": "짱구 맹구와 함께 춤을!",
+      "price": 16000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-SHN-002",
+      "name": "짱구 떡잎상사 젤펜",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "문구",
+      "description": "떡잎상사 입사 성공!",
+      "price": 4500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-EWF-001",
+      "name": "악어와프렌즈2 앤디 사원증키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "키링",
+      "description": "악프2 앤디 사원증키링",
+      "price": 8500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-EWF-002",
+      "name": "악어와프렌즈2 미란다 사원증키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "키링",
+      "description": "악프2 미란다 사원증키링",
+      "price": 8500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-KBO-001",
+      "name": "KBO 캔쿨러",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "생활용품",
+      "description": "최애구단 점퍼로 시원한 직관 ★",
+      "price": 13000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-KBO-002",
+      "name": "KBO 팝콘버킷",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "팝콘통",
+      "description": "승요 스티커로 완성! 만능버킷 ★",
+      "price": 7500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-PNG-001",
+      "name": "핑구 산타콜드컵",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "컵",
+      "description": "800ml 핑구 산타컵!",
+      "price": 10000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-PNG-002",
+      "name": "컬러핑구 인형키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "인형키링",
+      "description": "컬러핑구 인형키링",
+      "price": 7500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-PNG-003",
+      "name": "우비핑구 키링 (분홍)",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "키링",
+      "description": "우비핑구 키링 (분홍)",
+      "price": 11000,
+      "linked_movie": null,
+      "is_limited": true,
+      "note": "원본에 2번 등장. 중복 제거"
+    },
+    {
+      "item_id": "GD-SBB-001",
+      "name": "스폰지밥 자석피규어",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "피규어",
+      "description": "자석으로 내 맘대로 꾸미자!",
+      "price": 12500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-MCK-001",
+      "name": "한복미키 무드등",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "무드등",
+      "description": "USB타입 한복입은 미키마우스 보름달 무드등!",
+      "price": 15900,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-AVT-001",
+      "name": "아바타3 틴버킷",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "팝콘통",
+      "description": "3종 랜덤의 틴버킷!",
+      "price": 8500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-AVT-002",
+      "name": "아바타3 스틸컵",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "컵",
+      "description": "폴리프로필렌(PP) 재질",
+      "price": 15000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-RBT-001",
+      "name": "로봇아빠의 역습 피규어",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "피규어",
+      "description": "로봇아빠의 역습 명장면 피규어!",
+      "price": 13000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-MPL-001",
+      "name": "메이플스토리 비치타월",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "생활용품",
+      "description": "귀여운 핑크빈과 친구들 ♥",
+      "price": 11000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-WNP-001",
+      "name": "곰돌이 푸 / 피글렛 파우치",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "파우치",
+      "description": "온세상이 핑크 ♥",
+      "price": 10000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-LNK-001",
+      "name": "라이온킹 심바의 탄생 뱃지",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "뱃지",
+      "description": "움직이는 명장면 구현 ♥",
+      "price": 12500,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-BRD-001",
+      "name": "브레드이발소 피규어 키링",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "피규어키링",
+      "description": "브레드 or 윌크 중 택1",
+      "price": 12900,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-JKR-001",
+      "name": "조커 스크롤 포스터",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "포스터",
+      "description": "지관통 + 패브릭 스크롤 포스터!",
+      "price": 15000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-BHY-001",
+      "name": "백현: 론스달라이트 닷 미르 텀블러",
+      "store": [
+        "팝콘팩토리"
+      ],
+      "category": "텀블러",
+      "description": "흰색 / 검은색 중 택1",
+      "price": 35000,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-BTS-001",
+      "name": "방탄소년단 아미 음료컵",
+      "store": [
+        "팝콘팩토리",
+        "씨네펍"
+      ],
+      "category": "컵",
+      "description": "영롱한 아미밤 음료컵",
+      "price": 9900,
+      "linked_movie": null,
+      "is_limited": true,
+      "note": "팝콘팩토리·씨네펍 동시 판매. 중복 통합"
+    },
+    {
+      "item_id": "GD-BTS-002",
+      "name": "방탄소년단 아미 버킷",
+      "store": [
+        "씨네펍"
+      ],
+      "category": "팝콘통",
+      "description": "영롱한 아미밤 멀티버킷",
+      "price": 9900,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-JGK-001",
+      "name": "정국: I AM STILL 음료컵",
+      "store": [
+        "팝콘팩토리",
+        "씨네펍"
+      ],
+      "category": "컵",
+      "description": "정국: I AM STILL 음료컵!",
+      "price": 8900,
+      "linked_movie": null,
+      "is_limited": true,
+      "note": "팝콘팩토리·씨네펍 동시 판매. 중복 통합"
+    },
+    {
+      "item_id": "GD-JGK-002",
+      "name": "정국: I AM STILL 틴버킷",
+      "store": [
+        "씨네펍"
+      ],
+      "category": "팝콘통",
+      "description": "정국: I AM STILL 틴버킷!",
+      "price": 8900,
+      "linked_movie": null,
+      "is_limited": true
+    },
+    {
+      "item_id": "GD-JGK-003",
+      "name": "정국: I AM STILL 프로그램북",
+      "store": [
+        "팝콘팩토리",
+        "씨네펍"
+      ],
+      "category": "프로그램북",
+      "description": "케이스 + 프로그램북 + 스티커 1종!",
+      "price": 20900,
+      "linked_movie": null,
+      "is_limited": true,
+      "note": "팝콘팩토리·씨네펍 동시 판매. 원본에 2번씩 등장. 중복 통합"
+    },
+    {
+      "item_id": "GD-SVT-001",
+      "name": "세븐틴 인 시네마 음료컵",
+      "store": [
+        "팝콘팩토리",
+        "씨네펍"
+      ],
+      "category": "컵",
+      "description": "멤버 13인이 담긴 음료컵!",
+      "price": 10000,
+      "linked_movie": null,
+      "is_limited": true,
+      "note": "팝콘팩토리·씨네펍 동시 판매. 원본에 2번씩 등장. 중복 통합"
+    },
+    {
+      "item_id": "GD-SVT-002",
+      "name": "세븐틴 인 시네마 틴버킷",
+      "store": [
+        "팝콘팩토리",
+        "씨네펍"
+      ],
+      "category": "팝콘통",
+      "description": "멤버 13인이 담긴 틴버킷!",
+      "price": 10000,
+      "linked_movie": null,
+      "is_limited": true,
+      "note": "팝콘팩토리·씨네펍 동시 판매. 원본에 2번씩 등장. 중복 통합"
+    }
+  ],
+  "linked_to_our_movies": {
+    "설명": "우리 상영작과 연계 가능한 굿즈 요약. 추천 카드에 이 항목들을 노출합니다.",
+    "모아나": [
+      "GD-MOA-001",
+      "GD-MOA-002",
+      "GD-MOA-003"
+    ],
+    "토이 스토리 5": [
+      "GD-TOY-001",
+      "GD-TOY-002",
+      "GD-TOY-003"
+    ],
+    "사랑의 하츄핑: 고래보석의 전설": [
+      "PF-DRK-019 (cgv_snacks.json 참조)"
+    ]
+  },
+  "demo_scenarios": [
+    {
+      "persona_type": "ILSP (따뜻한 가족형)",
+      "movie": "모아나",
+      "special_screen": "SCREENX",
+      "snack": "PF-CMB-006 시그니처 팝콘콤보 (cgv_snacks.json)",
+      "goods": [
+        "GD-MOA-002 모아나 카카모라 인형키링",
+        "GD-MOA-003 모아나 푸아 인형키링"
+      ],
+      "full_flow": "ILSP 유형 → 모아나 추천 → SCREENX → 시그니처 팝콘콤보 → 카카모라 인형키링",
+      "shows": "★ 영화 → 특별관 → 매점 → 굿즈 풀 플로우 데모"
+    },
+    {
+      "persona_type": "ILSP (따뜻한 가족형)",
+      "movie": "토이 스토리 5",
+      "special_screen": "4DX",
+      "snack": "PF-CMB-006 시그니처 팝콘콤보 (cgv_snacks.json)",
+      "goods": [
+        "GD-TOY-001 포키 웨딩키링",
+        "GD-TOY-002 우디 보안관 키링"
+      ],
+      "shows": "토이 스토리 5 IP 연계 굿즈 추천"
+    }
+  ]
+}
