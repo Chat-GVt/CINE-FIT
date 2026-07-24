@@ -566,11 +566,37 @@ function ResultScreen({ onBack }) {
 }
 
 /* ── 앱 셸 ────────────────────────────────────────────────────────── */
+/* answers는 gi(0~19, 화면 노출 순서=Q01~Q20)를 키로, LikertRow의 버튼 인덱스(0~4)를 값으로 저장한다.
+   버튼 인덱스 0=가장 왼쪽("그렇다")이라 Likert 5점("매우 그렇다")에 대응하므로 5-index로 변환한다. */
+function buildMvtiPayload(answers, freeText) {
+  const out = {};
+  for (let gi = 0; gi < 20; gi++) {
+    const key = `Q${String(gi + 1).padStart(2, "0")}`;
+    const idx = answers[gi];
+    out[key] = idx == null ? null : 5 - idx;
+  }
+  return { answers: out, natural_language: freeText.trim() };
+}
+
+/* TODO: 백엔드 준비되면 이 함수 안의 fetch만 실제 엔드포인트로 채우면 됨.
+   지금은 백엔드가 없어서 페이로드를 콘솔에 찍기만 하고 결과 화면은 정적 목업을 그대로 보여준다. */
+async function submitMvti(payload) {
+  console.log("[MVTI 제출 payload]", JSON.stringify(payload, null, 2));
+  // const res = await fetch("/api/mvti", {
+  //   method: "POST",
+  //   headers: { "Content-Type": "application/json" },
+  //   body: JSON.stringify(payload),
+  // });
+  // return await res.json();
+  return null;
+}
+
 export default function App() {
   const [screen, setScreen] = useState("intro"); // 'intro' | 0..3 | 'freetext' | 'loading' | 'result'
   const [answers, setAnswers] = useState({});
   const [freeText, setFreeText] = useState("");
   const [scale, setScale] = useState(1);
+  const [mvtiResult, setMvtiResult] = useState(null);
 
   useEffect(() => {
     const fit = () => setScale(Math.min(1, (window.innerHeight - 24) / 800, (window.innerWidth - 24) / 360));
@@ -584,7 +610,9 @@ export default function App() {
       if (screen === PAGES.length - 1) setScreen("freetext");
       else setScreen(screen + 1);
     } else if (screen === "freetext") {
-      setScreen("loading"); // 마지막 단계: 여기서 더 진행하지 않음
+      const payload = buildMvtiPayload(answers, freeText);
+      submitMvti(payload).then(setMvtiResult);
+      setScreen("loading");
     }
   };
   const handleBack = () => {

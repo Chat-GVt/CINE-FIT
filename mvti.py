@@ -6,13 +6,15 @@ CGV MVTI 설문 채점 모듈
 from typing import Dict, Tuple
 
 # ---------- 축 정의 ----------
-# primary_qs: 원점수 그대로 사용하는 문항
-# reverse_qs: 역채점(6 - 원점수) 적용하는 문항
+# 문항 번호는 UI(mvti-test-new.jsx PAGES 배열)에 노출되는 순서 그대로(Q01~Q20)를 따른다.
+# primary_qs: 해당 축의 primary 방향(I/L/F/P)으로 쓰인 문항 - 원점수 그대로 사용
+# reverse_qs: 해당 축의 secondary 방향(R/D/S/U)으로 쓰인 문항 - 이것도 원점수 그대로 사용
+#             (6-x 역채점이 아니라, 애초에 반대 방향으로 물어본 문항이라 그 자체로 secondary 강도를 의미)
 AXES = {
-    "세계관":   {"primary": "I", "secondary": "R", "primary_qs": [9, 14, 18], "reverse_qs": [4, 7]},
-    "무드":     {"primary": "L", "secondary": "D", "primary_qs": [2, 11, 20], "reverse_qs": [6, 15]},
-    "속도감":   {"primary": "F", "secondary": "S", "primary_qs": [3, 12, 19], "reverse_qs": [8, 16]},
-    "선택방식": {"primary": "P", "secondary": "U", "primary_qs": [5, 13, 17], "reverse_qs": [1, 10]},
+    "세계관":   {"primary": "I", "secondary": "R", "primary_qs": [8, 14, 18], "reverse_qs": [4, 7]},
+    "무드":     {"primary": "L", "secondary": "D", "primary_qs": [1, 11, 20], "reverse_qs": [6, 15]},
+    "속도감":   {"primary": "F", "secondary": "S", "primary_qs": [3, 13, 19], "reverse_qs": [9, 16]},
+    "선택방식": {"primary": "P", "secondary": "U", "primary_qs": [5, 12, 17], "reverse_qs": [2, 10]},
 }
 
 TOTAL_QUESTIONS = 20
@@ -64,10 +66,14 @@ def _validate_answers(answers: Dict[int, int]) -> None:
 
 
 def _score_axis(answers: Dict[int, int], primary_qs, reverse_qs) -> float:
-    raw_scores = [answers[q] for q in primary_qs]
-    reverse_scores = [6 - answers[q] for q in reverse_qs]
-    avg = sum(raw_scores + reverse_scores) / len(primary_qs + reverse_qs)
-    primary_pct = (avg - 1) / 4 * 100  # 1~5점 척도를 0~100%로 정규화
+    """
+    primary 문항 평균과 secondary(reverse) 문항 평균을 각각 구한 뒤,
+    두 평균의 비율로 primary 성향(%)을 계산한다.
+    예: primary_avg=4.0, secondary_avg=2.0 -> 4.0/(4.0+2.0)*100 = 66.7%
+    """
+    primary_avg = sum(answers[q] for q in primary_qs) / len(primary_qs)
+    secondary_avg = sum(answers[q] for q in reverse_qs) / len(reverse_qs)
+    primary_pct = primary_avg / (primary_avg + secondary_avg) * 100
     return round(primary_pct, 1)
 
 
@@ -116,7 +122,7 @@ def get_survey_result(answers: Dict[int, int]) -> Dict:
 
 
 if __name__ == "__main__":
-    # 예시: 실제로는 앱에서 문항 1~20에 대한 유저 응답을 이 형태로 수집
+    # 예시: 실제로는 앱에서 문항 1~20(UI 노출 순서 그대로)에 대한 유저 응답을 이 형태로 수집
     sample_answers = {
         1: 2, 2: 4, 3: 3, 4: 2, 5: 2,
         6: 4, 7: 2, 8: 2, 9: 5, 10: 4,
