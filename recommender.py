@@ -16,6 +16,13 @@ EMBED_WEIGHT = 0.4
 NL_AXIS_WEIGHT = 0.3
 NL_EMBED_WEIGHT = 0.7
 
+# 사용자 임베딩을 구성하는 세 취향 신호의 상대 가중치.
+# 좋아요(명시적 선호) > 자연어(현재 발화) > 관람내역(봤다는 사실, 호불호는 불명확) 순.
+# 세 신호는 언제나 함께 결합된다(있는 것만). 관람내역은 재추천 제외와는 별개로 취향에도 반영.
+LIKED_EMBED_WEIGHT = 1.0
+NL_EMBED_SIGNAL_WEIGHT = 1.0
+WATCHED_EMBED_WEIGHT = 0.3
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -77,18 +84,68 @@ def cosine_similarity_list(vec_a: List[float], vec_b: List[float]) -> float:
 
 # ---------- B3: 하이브리드 매칭 ----------
 
-def user_embedding_from_likes(liked_movie_ids: List[int], movie_embeddings: Dict[int, List[float]]) -> List[float]:
-    """좋아요한 영화들의 임베딩을 평균+정규화해서 '사용자 임베딩'으로 사용."""
-    vecs = [movie_embeddings[mid] for mid in liked_movie_ids if mid in movie_embeddings]
+def _avg_normalize(vecs: List[List[float]]) -> Optional[List[float]]:
+    """벡터 리스트를 평균낸 뒤 L2 정규화. 비어 있으면 None."""
     if not vecs:
-        return [0.0] * len(next(iter(movie_embeddings.values())))
-
+        return None
     dim = len(vecs[0])
     avg = [sum(v[i] for v in vecs) / len(vecs) for i in range(dim)]
     norm = math.sqrt(sum(x * x for x in avg))
     if norm == 0:
         return avg
     return [x / norm for x in avg]
+
+
+def _movie_ids_to_vecs(movie_ids: List[int], movie_embeddings: Dict[int, List[float]]) -> List[List[float]]:
+    return [movie_embeddings[mid] for mid in (movie_ids or []) if mid in movie_embeddings]
+
+
+def user_embedding_from_likes(liked_movie_ids: List[int], movie_embeddings: Dict[int, List[float]]) -> List[float]:
+    """좋아요한 영화들의 임베딩을 평균+정규화해서 '사용자 임베딩'으로 사용."""
+    vec = _avg_normalize(_movie_ids_to_vecs(liked_movie_ids, movie_embeddings))
+    if vec is None:
+        return [0.0] * len(next(iter(movie_embeddings.values())))
+    return vec
+
+
+def build_user_embedding(
+    movie_embeddings: Dict[int, List[float]],
+    liked_movie_ids: Optional[List[int]] = None,
+    watched_movie_ids: Optional[List[int]] = None,
+    natural_language_text: Optional[str] = None,
+    liked_weight: float = LIKED_EMBED_WEIGHT,
+    watched_weight: float = WATCHED_EMBED_WEIGHT,
+    nl_weight: float = NL_EMBED_SIGNAL_WEIGHT,
+) -> List[float]:
+    """좋아요 + 관람내역 + 자연어 발화를 가중 결합한 '사용자 임베딩'.
+
+    - 세 신호 중 존재하는 것만 결합한다(각 신호는 먼저 평균+정규화한 뒤 가중합).
+    - 좋아요는 자연어 입력 유무와 관계없이 항상 반영된다.
+    - 관람내역은 취향 신호로 반영되지만, 재추천 제외(exclude_movie_ids)는 별도로 유지된다.
+    - 결합 후 다시 L2 정규화해서 코사인 유사도에 바로 쓸 수 있게 한다.
+    """
+    components = []  # (weight, unit_vector)
+
+    liked_vec = _avg_normalize(_movie_ids_to_vecs(liked_movie_ids, movie_embeddings))
+    if liked_vec is not None:
+        components.append((liked_weight, liked_vec))
+
+    watched_vec = _avg_normalize(_movie_ids_to_vecs(watched_movie_ids, movie_embeddings))
+    if watched_vec is not None:
+        components.append((watched_weight, watched_vec))
+
+    if natural_language_text:
+        from bge_embedder import embed_text
+        nl_vec = embed_text(natural_language_text)
+        components.append((nl_weight, nl_vec))
+
+    if not components:
+        return [0.0] * len(next(iter(movie_embeddings.values())))
+
+    dim = len(components[0][1])
+    total_w = sum(w for w, _ in components) or 1.0
+    combined = [sum(w * vec[i] for w, vec in components) / total_w for i in range(dim)]
+    return _avg_normalize([combined]) or combined
 
 
 def hybrid_movie_score(
@@ -165,15 +222,18 @@ def recommend_for_persona(
     이미 시청한(watched_movie_ids) 영화는 추천 후보에서 제외.
     각 카드에 특별관/매점/굿즈까지 포함.
 
-    natural_language_text(B6, 자연어 취향 입력)가 주어지면:
-    - 임베딩: "좋아요한 영화 평균" 대신 이 문장의 BGE-M3 임베딩으로 교체
+    임베딩(취향 벡터)은 좋아요 + 관람내역(+ 있다면 자연어)을 항상 함께 결합한다
+    (build_user_embedding). 관람내역은 취향에는 반영되지만 watched_movie_ids로
+    재추천에서는 계속 제외된다.
+
+    natural_language_text(B6, 자연어 취향 입력)가 주어지면 추가로:
+    - 임베딩: 위 결합에 이 문장의 BGE-M3 임베딩을 한 신호로 더 얹는다
     - 축: LLM이 문장에서 추정한 I/L/F/P를 target_axis_scores와 50:50으로 가중평균해서 사용
-    - 가중치도 축0.3:임베딩0.7로 전환(자연어가 실제로 반영되도록)
+    - 축:임베딩 가중치도 0.3:0.7로 전환(자연어가 실제로 반영되도록)
     반환: [{title, poster_url, similarity, axis_similarity, embed_similarity, genre,
              screen, snacks, goods}, ...]
     """
     if natural_language_text:
-        from bge_embedder import embed_text
         from llm_axis import convert_text_to_axis_scores
 
         nl_axis = convert_text_to_axis_scores(natural_language_text)
@@ -182,12 +242,20 @@ def recommend_for_persona(
             for k in AXIS_KEYS
         }
         user_axis_vector = centerize_vector(blended_axis)
-        user_embedding = embed_text(natural_language_text)
         axis_weight, embed_weight = NL_AXIS_WEIGHT, NL_EMBED_WEIGHT
     else:
         user_axis_vector = centerize_vector(persona["target_axis_scores"])
-        user_embedding = user_embedding_from_likes(persona["liked_movie_ids"], movie_embeddings)
         axis_weight, embed_weight = AXIS_WEIGHT, EMBED_WEIGHT
+
+    # 좋아요 + 관람내역 + (있다면)자연어를 항상 함께 결합한 사용자 임베딩.
+    # 관람내역은 여기서 취향으로 반영되지만, 아래 recommend_movies_hybrid의
+    # exclude_movie_ids로 재추천에서는 계속 제외된다.
+    user_embedding = build_user_embedding(
+        movie_embeddings,
+        liked_movie_ids=persona["liked_movie_ids"],
+        watched_movie_ids=persona["watched_movie_ids"],
+        natural_language_text=natural_language_text,
+    )
 
     top_movies = recommend_movies_hybrid(
         user_axis_vector, user_embedding, movies, movie_embeddings,

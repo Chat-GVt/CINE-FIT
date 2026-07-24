@@ -122,6 +122,89 @@ def generate_curation_reason(
     return json.loads(text)["curation_reason"]
 
 
+MOVIE_REASON_SYSTEM_PROMPT = """너는 CINE:FIT의 큐레이터다. 추천된 영화 각각에 대해,
+왜 이 영화가 이 사용자에게 맞는지 한 편씩 개인화된 추천 이유를 쓴다.
+(카드 하나하나 아래에 붙는 문장이다. 묶음 설명이 아니다.)
+
+[작성 방식]
+- 각 영화마다 2문장, 60~90자.
+- 첫 문장: 사용자의 취향(설문/자연어에서 드러난 것)을 되받아 "~하셨죠 / ~선호한다고 하셨어요"처럼 짚는다.
+- 둘째 문장: 그 취향과 이 영화의 특성(분위기·속도·세계관·색감 등)을 연결하고, 잘 맞는 선택임을 밝힌다.
+
+[반드시 지킬 것]
+- 제공된 영화 특성(I/L/F/P 분석) 안에서만 쓰고, 줄거리를 지어내지 마라.
+- 스포일러 금지. 결말·반전 암시 금지.
+- 유형 코드(ILFP 등)는 필요할 때 한 번 정도 취향 요약으로만 자연스럽게. 남발 금지.
+- 이모지 금지. 존댓말. 각 이유는 독립적으로 읽혀야 한다.
+- 입력된 영화 순서를 그대로 유지하고, title을 함께 반환하라."""
+
+MOVIE_REASON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "reasons": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "reason": {"type": "string"},
+                },
+                "required": ["title", "reason"],
+                "additionalProperties": False,
+            },
+        }
+    },
+    "required": ["reasons"],
+    "additionalProperties": False,
+}
+
+
+def generate_movie_reasons(
+    persona: dict,
+    cards: list,
+    movies: list,
+    natural_language_text: str = None,
+) -> list:
+    """추천된 카드 각각에 붙는 개인화 추천 이유를 한 번의 LLM 호출로 생성.
+    반환: [{"title": ..., "reason": ...}, ...] (입력 카드 순서 유지)."""
+    movies_by_title = {m["korean_title"]: m for m in movies}
+    type_info = mvti.TYPE_INFO.get(persona["target_type"], {})
+    axis = persona["target_axis_scores"]
+
+    movie_lines = []
+    for i, c in enumerate(cards, 1):
+        m = movies_by_title[c["title"]]
+        reasons = m["mvti"]["reasons"]
+        screen = (c.get("screen") or {}).get("screen")
+        line = (
+            f"{i}. {c['title']} (매칭 {c['similarity']}%) — {', '.join(c['genre'])}, {m['runtime']}분\n"
+            f"    특성: I={reasons['I']} / L={reasons['L']} / F={reasons['F']} / P={reasons['P']}"
+        )
+        if screen:
+            line += f"\n    추천 상영관: {screen}"
+        movie_lines.append(line)
+
+    user_prompt = f"""[사용자]
+유형: {persona.get('type_name')} ({type_info.get('keywords', '')}) / 코드 {persona['target_type']}
+취향: 세계관 {axis['I']}/100, 무드 {axis['L']}/100, 속도감 {axis['F']}/100, 선택 {axis['P']}/100
+직접 입력: {natural_language_text or '없음'}
+
+[추천된 영화들]
+{chr(10).join(movie_lines)}
+
+각 영화마다 이 사용자에게 맞는 추천 이유를 title과 함께 작성하라."""
+
+    resp = get_client().messages.create(
+        model=MODEL,
+        max_tokens=700,
+        system=MOVIE_REASON_SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": user_prompt}],
+        output_config={"format": {"type": "json_schema", "schema": MOVIE_REASON_SCHEMA}},
+    )
+    text = next(b.text for b in resp.content if b.type == "text")
+    return json.loads(text)["reasons"]
+
+
 if __name__ == "__main__":
     import recommender as r
 
