@@ -36,7 +36,13 @@
     ],
     "poster_url": "https://image.tmdb.org/t/p/w342/8mLepBa5l591xFidRpn65xV7hb4.jpg",
     "tmdb_url": "https://www.themoviedb.org/movie/969681",
-    "cgv_screen_types": [],
+    "cgv_screen_types": [
+      "SCREENX",
+      "4DX",
+      "IMAX",
+      "DOLBY ATMOS",
+      "템퍼시네마"
+    ],
     "goods_package": false,
     "status": "other",
     "korean_title": "스파이더맨-브랜드 뉴 데이",
@@ -91,7 +97,13 @@
     ],
     "poster_url": "https://image.tmdb.org/t/p/w342/ptqlN6mDIAqJjVA86J5eOoG82zc.jpg",
     "tmdb_url": "https://www.themoviedb.org/movie/1058424",
-    "cgv_screen_types": [],
+    "cgv_screen_types": [
+      "SCREENX",
+      "4DX",
+      "IMAX",
+      "DOLBY ATMOS",
+      "템퍼시네마"
+    ],
     "goods_package": false,
     "status": "other",
     "korean_title": "호프",
@@ -161,7 +173,12 @@
     ],
     "poster_url": "https://image.tmdb.org/t/p/w342/8ze9OcVuFiy94s6FFPvsn4oC2e1.jpg",
     "tmdb_url": "https://www.themoviedb.org/movie/1368337",
-    "cgv_screen_types": [],
+    "cgv_screen_types": [
+      "SCREENX",
+      "4DX",
+      "IMAX",
+      "DOLBY ATMOS"
+    ],
     "goods_package": false,
     "status": "other",
     "korean_title": "오디세이",
@@ -233,7 +250,12 @@
     ],
     "poster_url": "https://image.tmdb.org/t/p/w342/8uvgppq5obV06X9X8SogQiU79Kd.jpg",
     "tmdb_url": "https://www.themoviedb.org/movie/1315772",
-    "cgv_screen_types": [],
+    "cgv_screen_types": [
+      "SCREENX",
+      "4DX",
+      "DOLBY ATMOS",
+      "템퍼시네마"
+    ],
     "goods_package": false,
     "status": "other",
     "korean_title": "미니언즈 & 몬스터즈",
@@ -444,7 +466,11 @@
     ],
     "poster_url": "https://image.tmdb.org/t/p/w342/AqrJx3nVVMlKWXGaPIH32GzjEJA.jpg",
     "tmdb_url": "https://www.themoviedb.org/movie/1084244",
-    "cgv_screen_types": [],
+    "cgv_screen_types": [
+      "SCREENX",
+      "4DX",
+      "DOLBY ATMOS"
+    ],
     "goods_package": false,
     "status": "other",
     "korean_title": "토이 스토리 5",
@@ -681,7 +707,9 @@
     ],
     "poster_url": "https://image.tmdb.org/t/p/w342/hqzCMHTuymM7FOZwpHfW5meiX1m.jpg",
     "tmdb_url": "https://www.themoviedb.org/movie/1317288",
-    "cgv_screen_types": [],
+    "cgv_screen_types": [
+      "DOLBY ATMOS"
+    ],
     "goods_package": false,
     "status": "other",
     "korean_title": "마티 슈프림",
