@@ -5,27 +5,34 @@ B4 검증: personas.json 48명 전원에게 recommend_for_persona()를 돌려
 
 from collections import Counter
 
-from recommender import load_movies, load_movie_embeddings, load_personas, recommend_for_persona
+from recommender import (
+    load_movies, load_movie_embeddings, load_personas, load_snacks, load_goods,
+    recommend_for_persona,
+)
 
 
 def main():
     movies = load_movies()
     movie_embeddings = load_movie_embeddings()
     personas = load_personas()
+    snacks = load_snacks()
+    goods = load_goods()
 
     top1_counter = Counter()
     top1_by_type = {}
 
     for p in personas:
-        cards = recommend_for_persona(p, movies, movie_embeddings)
+        cards = recommend_for_persona(p, movies, movie_embeddings, snacks, goods)
         top1 = cards[0] if cards else None
         top1_title = top1["title"] if top1 else "추천없음"
         top1_counter[top1_title] += 1
         top1_by_type.setdefault(p["target_type"], []).append(top1_title)
 
+        screen = top1["screen"]["screen"] if top1 and top1["screen"] else "없음"
+        snack_names = ", ".join(s["name"] for s in top1["snacks"]) if top1 else "-"
         tag = f"(boundary:{p['boundary_axis']})" if p["is_boundary"] else ""
         print(f"{p['persona_id']} {p['name']:6s} {p['target_type']} {tag:14s} "
-              f"-> [{top1['similarity']}%] {top1_title}")
+              f"-> [{top1['similarity']}%] {top1_title} | {screen} | {snack_names}")
 
     print("\n=== 유형별 top1 (3명씩) ===")
     for t, titles in sorted(top1_by_type.items()):

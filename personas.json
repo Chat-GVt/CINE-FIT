@@ -11,7 +11,7 @@
       "P": "0=완전 Unique, 100=완전 Popular",
       "note": "target_axis_scores는 '이 페르소나가 이렇게 나와야 한다'는 정답(ground truth). 설문 시뮬레이션 결과와 비교해 채점 로직/문항을 검증한다."
     },
-    "empty_fields_note": "survey_answers, scored_axis_scores, predicted_type은 의도적으로 null. LLM이 프로필만 보고 설문에 응답하게 한 뒤 채워야 검증이 성립함."
+    "survey_validation_note": "survey_answers, scored_axis_scores, predicted_type은 의도적으로 null. LLM이 프로필만 보고 설문에 응답하게 한 뒤 채워야 검증이 성립함."
   },
   "personas": [
     {
@@ -39,18 +39,18 @@
       "watched_movie_ids": [
         1,
         2,
-        9,
-        16,
         26,
-        39,
+        5,
         25,
-        5
+        39,
+        7,
+        15
       ],
       "liked_movie_ids": [
         1,
         2,
-        9,
-        16
+        26,
+        5
       ]
     },
     {
@@ -78,14 +78,14 @@
       "watched_movie_ids": [
         2,
         1,
-        16,
-        9,
-        26
+        26,
+        5,
+        25
       ],
       "liked_movie_ids": [
         2,
         1,
-        16
+        26
       ]
     },
     {
@@ -111,16 +111,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        9,
-        16,
         26,
+        5,
+        16,
         1,
-        5
+        9
       ],
       "liked_movie_ids": [
-        9,
-        16,
-        26
+        26,
+        5,
+        16
       ]
     },
     {
@@ -146,20 +146,20 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        5,
-        26,
-        16,
         9,
+        16,
+        32,
         17,
-        1,
+        11,
+        5,
         54,
         28
       ],
       "liked_movie_ids": [
-        5,
-        26,
+        9,
         16,
-        9
+        32,
+        17
       ]
     },
     {
@@ -185,16 +185,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        5,
         9,
-        26,
         16,
-        1
+        32,
+        5,
+        28
       ],
       "liked_movie_ids": [
-        5,
         9,
-        26
+        16,
+        32
       ]
     },
     {
@@ -220,13 +220,13 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        5,
-        28,
-        9
+        9,
+        16,
+        28
       ],
       "liked_movie_ids": [
-        5,
-        28
+        9,
+        16
       ]
     },
     {
@@ -253,12 +253,12 @@
       "predicted_type": null,
       "watched_movie_ids": [
         2,
-        54,
-        17
+        1,
+        26
       ],
       "liked_movie_ids": [
         2,
-        54
+        1
       ]
     },
     {
@@ -284,13 +284,13 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
+        2,
         54,
-        17,
-        2
+        1
       ],
       "liked_movie_ids": [
-        54,
-        17
+        2,
+        54
       ]
     },
     {
@@ -318,14 +318,14 @@
       "watched_movie_ids": [
         2,
         1,
-        16,
         26,
+        5,
         17
       ],
       "liked_movie_ids": [
         2,
         1,
-        16
+        26
       ]
     },
     {
@@ -351,16 +351,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        54,
-        17,
-        14,
-        45,
-        5
-      ],
-      "liked_movie_ids": [
+        32,
+        11,
         54,
         17,
         14
+      ],
+      "liked_movie_ids": [
+        32,
+        11,
+        54
       ]
     },
     {
@@ -386,12 +386,12 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        54,
+        32,
         17,
-        14
+        54
       ],
       "liked_movie_ids": [
-        54,
+        32,
         17
       ]
     },
@@ -418,16 +418,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
+        32,
+        11,
         17,
         54,
-        42,
-        23,
-        48
+        27
       ],
       "liked_movie_ids": [
-        17,
-        54,
-        42
+        32,
+        11,
+        17
       ]
     },
     {
@@ -455,18 +455,18 @@
       "watched_movie_ids": [
         25,
         7,
+        15,
         39,
         18,
-        15,
         55,
         28,
-        9
+        5
       ],
       "liked_movie_ids": [
         25,
         7,
-        39,
-        18
+        15,
+        39
       ]
     },
     {
@@ -493,15 +493,15 @@
       "predicted_type": null,
       "watched_movie_ids": [
         25,
+        15,
         7,
         39,
-        18,
-        15
+        18
       ],
       "liked_movie_ids": [
         25,
-        7,
-        39
+        15,
+        7
       ]
     },
     {
@@ -527,13 +527,13 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        7,
-        25,
-        39
-      ],
-      "liked_movie_ids": [
+        15,
         7,
         25
+      ],
+      "liked_movie_ids": [
+        15,
+        7
       ]
     },
     {
@@ -559,16 +559,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        15,
         55,
         28,
         18,
-        39
+        9,
+        11
       ],
       "liked_movie_ids": [
-        15,
         55,
-        28
+        28,
+        18
       ]
     },
     {
@@ -594,20 +594,20 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        15,
         55,
         28,
+        11,
+        9,
         18,
-        39,
-        5,
+        8,
         12,
-        25
+        39
       ],
       "liked_movie_ids": [
-        15,
         55,
         28,
-        18
+        11,
+        9
       ]
     },
     {
@@ -634,12 +634,12 @@
       "predicted_type": null,
       "watched_movie_ids": [
         18,
-        15,
-        55
+        55,
+        28
       ],
       "liked_movie_ids": [
         18,
-        15
+        55
       ]
     },
     {
@@ -665,12 +665,12 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        11,
+        7,
         45,
         12
       ],
       "liked_movie_ids": [
-        11,
+        7,
         45
       ]
     },
@@ -698,12 +698,12 @@
       "predicted_type": null,
       "watched_movie_ids": [
         45,
-        11,
-        12
+        12,
+        14
       ],
       "liked_movie_ids": [
         45,
-        11
+        12
       ]
     },
     {
@@ -729,16 +729,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        14,
-        45,
-        54,
         2,
-        11
+        45,
+        14,
+        7,
+        1
       ],
       "liked_movie_ids": [
-        14,
+        2,
         45,
-        54
+        14
       ]
     },
     {
@@ -768,7 +768,7 @@
         45,
         12,
         14,
-        54
+        27
       ],
       "liked_movie_ids": [
         11,
@@ -803,10 +803,10 @@
         45,
         12,
         14,
+        32,
+        27,
         54,
-        15,
-        55,
-        28
+        55
       ],
       "liked_movie_ids": [
         11,
@@ -838,13 +838,13 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        12,
         11,
-        15
+        12,
+        55
       ],
       "liked_movie_ids": [
-        12,
-        11
+        11,
+        12
       ]
     },
     {
@@ -871,15 +871,15 @@
       "predicted_type": null,
       "watched_movie_ids": [
         13,
-        19,
         3,
-        52,
-        23
+        2,
+        19,
+        1
       ],
       "liked_movie_ids": [
         13,
-        19,
-        3
+        3,
+        2
       ]
     },
     {
@@ -906,15 +906,15 @@
       "predicted_type": null,
       "watched_movie_ids": [
         13,
-        19,
-        52,
         3,
-        23
+        19,
+        2,
+        52
       ],
       "liked_movie_ids": [
         13,
-        19,
-        52
+        3,
+        19
       ]
     },
     {
@@ -942,7 +942,7 @@
       "watched_movie_ids": [
         2,
         1,
-        16
+        13
       ],
       "liked_movie_ids": [
         2,
@@ -972,16 +972,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        13,
+        8,
         52,
-        6,
         23,
-        48
+        48,
+        50
       ],
       "liked_movie_ids": [
-        13,
+        8,
         52,
-        6
+        23
       ]
     },
     {
@@ -1007,12 +1007,12 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        13,
+        8,
         52,
-        6
+        23
       ],
       "liked_movie_ids": [
-        13,
+        8,
         52
       ]
     },
@@ -1079,12 +1079,12 @@
       "predicted_type": null,
       "watched_movie_ids": [
         19,
-        42,
-        49
+        13,
+        42
       ],
       "liked_movie_ids": [
         19,
-        42
+        13
       ]
     },
     {
@@ -1111,12 +1111,12 @@
       "predicted_type": null,
       "watched_movie_ids": [
         19,
-        42,
-        49
+        13,
+        42
       ],
       "liked_movie_ids": [
         19,
-        42
+        13
       ]
     },
     {
@@ -1142,16 +1142,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        46,
         44,
-        49,
-        53,
-        22
+        13,
+        19,
+        46,
+        49
       ],
       "liked_movie_ids": [
-        46,
         44,
-        49
+        13,
+        19
       ]
     },
     {
@@ -1178,15 +1178,15 @@
       "predicted_type": null,
       "watched_movie_ids": [
         53,
-        42,
-        49,
         23,
-        48
+        48,
+        50,
+        51
       ],
       "liked_movie_ids": [
         53,
-        42,
-        49
+        23,
+        48
       ]
     },
     {
@@ -1212,19 +1212,19 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
+        27,
         53,
-        42,
-        49,
+        10,
         23,
         48,
         50,
         51,
-        52
+        49
       ],
       "liked_movie_ids": [
+        27,
         53,
-        42,
-        49,
+        10,
         23
       ]
     },
@@ -1251,13 +1251,13 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        54,
-        17,
-        42
+        32,
+        11,
+        27
       ],
       "liked_movie_ids": [
-        54,
-        17
+        32,
+        11
       ]
     },
     {
@@ -1284,15 +1284,15 @@
       "predicted_type": null,
       "watched_movie_ids": [
         3,
-        8,
         6,
-        44,
-        7
+        7,
+        13,
+        25
       ],
       "liked_movie_ids": [
         3,
-        8,
-        6
+        6,
+        7
       ]
     },
     {
@@ -1319,12 +1319,12 @@
       "predicted_type": null,
       "watched_movie_ids": [
         3,
-        8,
-        6
+        6,
+        44
       ],
       "liked_movie_ids": [
         3,
-        8
+        6
       ]
     },
     {
@@ -1351,14 +1351,14 @@
       "predicted_type": null,
       "watched_movie_ids": [
         3,
-        8,
-        6,
         13,
-        52
+        6,
+        7,
+        25
       ],
       "liked_movie_ids": [
         3,
-        8,
+        13,
         6
       ]
     },
@@ -1385,20 +1385,20 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        6,
         8,
-        3,
         10,
+        27,
+        6,
         43,
         22,
         47,
-        44
+        46
       ],
       "liked_movie_ids": [
-        6,
         8,
-        3,
-        10
+        10,
+        27,
+        6
       ]
     },
     {
@@ -1424,16 +1424,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        6,
         8,
-        3,
+        27,
         10,
+        6,
         43
       ],
       "liked_movie_ids": [
-        6,
         8,
-        3
+        27,
+        10
       ]
     },
     {
@@ -1459,12 +1459,12 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        8,
+        6,
         3,
-        6
+        8
       ],
       "liked_movie_ids": [
-        8,
+        6,
         3
       ]
     },
@@ -1493,7 +1493,7 @@
       "watched_movie_ids": [
         44,
         43,
-        10
+        22
       ],
       "liked_movie_ids": [
         44,
@@ -1525,7 +1525,7 @@
       "watched_movie_ids": [
         44,
         43,
-        10
+        22
       ],
       "liked_movie_ids": [
         44,
@@ -1555,16 +1555,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        44,
         3,
-        8,
-        10,
-        43
+        44,
+        43,
+        6,
+        22
       ],
       "liked_movie_ids": [
-        44,
         3,
-        8
+        44,
+        43
       ]
     },
     {
@@ -1590,16 +1590,16 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        43,
+        27,
         10,
-        22,
-        47,
-        46
+        43,
+        8,
+        22
       ],
       "liked_movie_ids": [
-        43,
+        27,
         10,
-        22
+        43
       ]
     },
     {
@@ -1625,20 +1625,20 @@
       "scored_axis_scores": null,
       "predicted_type": null,
       "watched_movie_ids": [
-        43,
+        27,
         10,
+        43,
+        8,
         22,
         47,
         46,
-        44,
-        53,
-        8
+        11
       ],
       "liked_movie_ids": [
-        43,
+        27,
         10,
-        22,
-        47
+        43,
+        8
       ]
     },
     {
@@ -1665,12 +1665,12 @@
       "predicted_type": null,
       "watched_movie_ids": [
         43,
-        44,
-        10
+        22,
+        47
       ],
       "liked_movie_ids": [
         43,
-        44
+        22
       ]
     }
   ]

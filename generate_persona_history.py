@@ -27,11 +27,18 @@ def centerize_vector(axis_scores_0_100):
     return {k: (axis_scores_0_100[k] - 50) / 50 for k in ("I", "L", "F", "P")}
 
 
-def cosine_similarity(vec_a, vec_b):
+AXIS_WEIGHTS = {"I": 1.0, "L": 1.0, "F": 1.0, "P": 2.0}
+
+
+def cosine_similarity(vec_a, vec_b, weights=AXIS_WEIGHTS):
+    """
+    가중 코사인 유사도. P축 가중치를 높여서(기본 2배), 좋아요 영화 선정 시
+    I/L/F만 맞고 P는 희생되는 경우를 줄인다(A5 검증에서 P축 오차가 컸던 원인).
+    """
     keys = [k for k in vec_a if k in vec_b]
-    dot = sum(vec_a[k] * vec_b[k] for k in keys)
-    norm_a = math.sqrt(sum(vec_a[k] ** 2 for k in keys))
-    norm_b = math.sqrt(sum(vec_b[k] ** 2 for k in keys))
+    dot = sum(weights[k] * vec_a[k] * vec_b[k] for k in keys)
+    norm_a = math.sqrt(sum(weights[k] * vec_a[k] ** 2 for k in keys))
+    norm_b = math.sqrt(sum(weights[k] * vec_b[k] ** 2 for k in keys))
     if norm_a == 0 or norm_b == 0:
         return 0.0
     return dot / (norm_a * norm_b)
@@ -63,7 +70,7 @@ def main():
         like_count = max(1, (watch_count + 1) // 2)
         liked = watched[:like_count]
 
-        del p["recent_movies"]
+        p.pop("recent_movies", None)
         p["watched_movie_ids"] = [m["movie_id"] for m in watched]
         p["liked_movie_ids"] = [m["movie_id"] for m in liked]
 

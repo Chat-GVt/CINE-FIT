@@ -1,3 +1,6 @@
 .env
 __pycache__/
 *.pyc
+axis_distribution.json
+axis_distribution.png
+recommendation_results.md
