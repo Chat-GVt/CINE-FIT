@@ -358,11 +358,14 @@ function LoadingFinalScreen({ onBack, onDone }) {
 /* ── 9. 결과 화면 (Figma: frame "9") ─────────────────────────────── */
 
 /* 4개 축 — 게이지 채움 비율은 Figma 실측값(트랙 241px 기준) */
-const AXES = [
-  { label: "세계관", lk: "I", ln: "상상형",   rk: "R", rn: "현실주의형", color: "#ea3434", pct: 167 / 241 },
-  { label: "분위기", lk: "L", ln: "밝음",     rk: "D", rn: "어두움",     color: "#d58e09", pct: 216 / 241 },
-  { label: "속도",   lk: "F", ln: "빠른 전개", rk: "L", rn: "느린 여운",  color: "#2078c0", pct: 205 / 241 },
-  { label: "대중성", lk: "P", ln: "유명작",   rk: "U", rn: "마이너작",   color: "#5a3ca7", pct: 181 / 241 },
+/* axisKey: 백엔드 mvti.py의 axis_scores 딕셔너리 키(한글 축 이름).
+   pct는 데모용 기본값(백엔드 결과가 아직 없을 때 보여줄 값)이고,
+   실제 결과가 오면 result.axis_scores[axisKey][lk]/100 으로 덮어쓴다. */
+const AXIS_ROWS = [
+  { axisKey: "세계관",   label: "세계관", lk: "I", ln: "상상형",   rk: "R", rn: "현실주의형", color: "#ea3434", demoPct: 167 / 241 },
+  { axisKey: "무드",     label: "분위기", lk: "L", ln: "밝음",     rk: "D", rn: "어두움",     color: "#d58e09", demoPct: 216 / 241 },
+  { axisKey: "속도감",   label: "속도",   lk: "F", ln: "빠른 전개", rk: "S", rn: "느린 여운",  color: "#2078c0", demoPct: 205 / 241 },
+  { axisKey: "선택방식", label: "대중성", lk: "P", ln: "유명작",   rk: "U", rn: "마이너작",   color: "#5a3ca7", demoPct: 181 / 241 },
 ];
 
 function AxisRow({ a }) {
@@ -447,7 +450,15 @@ function SectionTitle({ children, style }) {
   );
 }
 
-function ResultScreen({ onBack }) {
+function ResultScreen({ onBack, result }) {
+  const typeCode = result?.type_code ?? "ILFP";
+  const typeName = result?.type_name ?? "화려한 마블 히어로 형";
+  const axisRows = AXIS_ROWS.map((row) => {
+    const scores = result?.axis_scores?.[row.axisKey];
+    const pct = scores ? scores[row.lk] / 100 : row.demoPct;
+    return { ...row, pct };
+  });
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: T.neutral0 }}>
       <StatusBar />
@@ -461,16 +472,16 @@ function ResultScreen({ onBack }) {
             <span style={{ fontWeight: 500 }}>님의 유형은</span>
           </p>
           <p style={{ margin: "4px 0 0", fontFamily: FONT, fontWeight: 900, fontSize: 35, lineHeight: 1.3, letterSpacing: "-1.23px", color: "#000" }}>
-            ILFP
+            {typeCode}
           </p>
           <p style={{ margin: 0, fontFamily: FONT, fontWeight: 500, fontSize: 23, lineHeight: 1.3, letterSpacing: "-1.23px", color: "#000" }}>
-            화려한 마블 히어로 형
+            {typeName}
           </p>
         </div>
 
         {/* 4축 게이지 */}
         <div style={{ padding: "28px 20px 0" }}>
-          {AXES.map((a) => <AxisRow key={a.label} a={a} />)}
+          {axisRows.map((a) => <AxisRow key={a.label} a={a} />)}
         </div>
 
         {/* 유형 설명 */}
@@ -578,17 +589,28 @@ function buildMvtiPayload(answers, freeText) {
   return { answers: out, natural_language: freeText.trim() };
 }
 
-/* TODO: 백엔드 준비되면 이 함수 안의 fetch만 실제 엔드포인트로 채우면 됨.
-   지금은 백엔드가 없어서 페이로드를 콘솔에 찍기만 하고 결과 화면은 정적 목업을 그대로 보여준다. */
+const MVTI_API_BASE = "http://localhost:8000";
+
+/* api.py의 POST /mvti/score 호출 -> { type_code, axis_scores, type_name, keywords, characters } */
 async function submitMvti(payload) {
   console.log("[MVTI 제출 payload]", JSON.stringify(payload, null, 2));
-  // const res = await fetch("/api/mvti", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload),
-  // });
-  // return await res.json();
-  return null;
+  try {
+    const res = await fetch(`${MVTI_API_BASE}/mvti/score`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers: payload.answers }),
+    });
+    if (!res.ok) {
+      console.error("[MVTI 채점 실패]", res.status, await res.text());
+      return null;
+    }
+    const data = await res.json();
+    console.log("[MVTI 채점 결과]", data);
+    return data;
+  } catch (err) {
+    console.error("[MVTI 채점 요청 에러 - 백엔드(uvicorn api:app)가 켜져 있는지 확인]", err);
+    return null;
+  }
 }
 
 export default function App() {
@@ -646,7 +668,7 @@ export default function App() {
           />
         )}
         {screen === "loading" && <LoadingFinalScreen onBack={handleBack} onDone={() => setScreen("result")} />}
-        {screen === "result" && <ResultScreen onBack={handleBack} />}
+        {screen === "result" && <ResultScreen onBack={handleBack} result={mvtiResult} />}
       </div>
     </div>
   );
