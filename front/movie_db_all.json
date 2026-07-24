@@ -54,12 +54,7 @@
       }
     },
     "special_screen": [
-      "ULTRA 4DX",
-      "SCREENX",
-      "4DX",
-      "IMAX",
-      "DOLBY ATMOS",
-      "TEMPUR CINEMA"
+      "SCREENX"
     ],
     "snack": null
   },
