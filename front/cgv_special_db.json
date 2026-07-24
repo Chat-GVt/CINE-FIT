@@ -1,0 +1,26 @@
+[
+  {
+    "name": "SCREENX",
+    "description": "스크린의 경계를 넘은 세계 최초 다면 특별관"
+  },
+  {
+    "name": "4DX",
+    "description": "다양한 환경 효과를 느낄 수 있는 오감체험 특별관"
+  },
+  {
+    "name": "ULTRA 4DX",
+    "description": "최대치의 공감각을 제공하는 특별관​"
+  },
+  {
+    "name": "IMAX",
+    "description": "궁극의 몰입감을 제공하는 특별관​"
+  },
+  {
+    "name": "DOLBY ATMOS",
+    "description": "차세대 몰입형 사운드 특별관​​"
+  },
+  {
+    "name": "TEMPUR CINEMA",
+    "description": "프리미엄 매트리스 상영관​​​"
+  }
+]
