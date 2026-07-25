@@ -44,5 +44,5 @@ TOP_N = 3
 EMBEDDING_REPO = "nlpai-lab/KURE-v1"
 EMBEDDING_MAX_LENGTH = 1024  # description이 길어 넉넉히
 
-OPENAI_MODEL = "gpt-4o-mini"
+OPENAI_MODEL = "gpt-5.4-mini"
 OPENAI_API_KEY_ENV = "OPENAI_API_KEY"

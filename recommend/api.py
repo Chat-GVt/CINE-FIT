@@ -27,7 +27,8 @@ from typing import Dict, Optional
 from dotenv import find_dotenv, load_dotenv
 
 # .env 로드: 프로젝트 루트(또는 그 상위)에 있는 OPENAI_API_KEY를 잡는다.
-load_dotenv(find_dotenv(usecwd=True))
+# override=True: OS 환경변수에 옛 키가 박혀 있어도 .env 값이 우선되게 한다.
+load_dotenv(find_dotenv(usecwd=True), override=True)
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware

@@ -312,11 +312,20 @@ function FreeTextScreen({ value, onChange, onBack, onNext, onSkip }) {
 
 /* ── 8. 최종 분석 중 화면 (Figma: frame "8") ─────────────────────────
    결과 화면(frame "9")이 추가되어, 이제 2.6초 후 결과로 자동 전환됩니다. */
-function LoadingFinalScreen({ onBack, onDone }) {
+function LoadingFinalScreen({ onBack, onDone, ready }) {
+  // 최소 애니메이션(2.6초)과 API 응답을 둘 다 기다린 뒤 결과로 전환.
+  // 응답이 안 오면(에러/지연) 20초 후 안전하게 넘어감(무한 로딩 방지).
+  const [minPassed, setMinPassed] = useState(false);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
   useEffect(() => {
-    const t = setTimeout(onDone, 2600);
-    return () => clearTimeout(t);
-  }, [onDone]);
+    const t = setTimeout(() => setMinPassed(true), 2600);
+    const safety = setTimeout(() => onDoneRef.current(), 20000);
+    return () => { clearTimeout(t); clearTimeout(safety); };
+  }, []);
+  useEffect(() => {
+    if (minPassed && ready) onDoneRef.current();
+  }, [minPassed, ready]);
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", ...BG_GRADIENT }}>
       <style>{`@keyframes mvtiSpin { to { transform: rotate(360deg); } }`}</style>
@@ -369,20 +378,23 @@ const AXIS_ROWS = [
 ];
 
 function AxisRow({ a }) {
+  // 이긴 극에만 색을, 진 극은 회색. fillFrom "left"면 왼쪽 극(I/L/F/P) 승, "right"면 오른쪽 극(R/D/S/U) 승.
+  const leftOn = (a.fillFrom ?? "left") === "left";
+  const GRAY = "#6c6c6c";
   return (
     <div style={{ marginBottom: 24 }}>
       <p style={{ margin: "0 0 6px", textAlign: "center", fontFamily: FONT, fontWeight: 600, fontSize: 16, lineHeight: 1.3, letterSpacing: "-0.816px", color: "#000" }}>
         {a.label}
       </p>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 52, textAlign: "center", flexShrink: 0, color: a.color }}>
+        <div style={{ width: 52, textAlign: "center", flexShrink: 0, color: leftOn ? a.color : GRAY }}>
           <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 16, lineHeight: 1.3 }}>{a.lk}</div>
           <div style={{ fontFamily: FONT, fontWeight: 500, fontSize: 12, lineHeight: 1.3 }}>{a.ln}</div>
         </div>
         <div style={{ position: "relative", flex: 1, height: 8, background: "#d9d9d9", borderRadius: 5, overflow: "hidden" }}>
           <div style={{ position: "absolute", top: 0, [a.fillFrom ?? "left"]: 0, height: 8, width: `${a.pct * 100}%`, background: a.color, borderRadius: 5 }} />
         </div>
-        <div style={{ width: 56, textAlign: "center", flexShrink: 0, color: "#6c6c6c" }}>
+        <div style={{ width: 56, textAlign: "center", flexShrink: 0, color: leftOn ? GRAY : a.color }}>
           <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 16, lineHeight: 1.3 }}>{a.rk}</div>
           <div style={{ fontFamily: FONT, fontWeight: 500, fontSize: 12, lineHeight: 1.3 }}>{a.rn}</div>
         </div>
@@ -756,6 +768,7 @@ export default function App() {
   const [freeText, setFreeText] = useState("");
   const [scale, setScale] = useState(1);
   const [mvtiResult, setMvtiResult] = useState(null);
+  const [resultReady, setResultReady] = useState(false); // API 응답 도착 여부(에러여도 true)
 
   useEffect(() => {
     const fit = () => setScale(Math.min(1, (window.innerHeight - 24) / 800, (window.innerWidth - 24) / 360));
@@ -770,7 +783,9 @@ export default function App() {
       else setScreen(screen + 1);
     } else if (screen === "freetext") {
       const payload = buildMvtiPayload(answers, freeText);
-      submitMvti(payload).then(setMvtiResult);
+      setMvtiResult(null);
+      setResultReady(false);
+      submitMvti(payload).then((res) => { setMvtiResult(res); setResultReady(true); });
       setScreen("loading");
     }
   };
@@ -804,7 +819,7 @@ export default function App() {
             onSkip={handleNext}
           />
         )}
-        {screen === "loading" && <LoadingFinalScreen onBack={handleBack} onDone={() => setScreen("result")} />}
+        {screen === "loading" && <LoadingFinalScreen onBack={handleBack} onDone={() => setScreen("result")} ready={resultReady} />}
         {screen === "result" && <ResultScreen onBack={handleBack} result={mvtiResult} />}
       </div>
     </div>
