@@ -357,7 +357,7 @@ def _fallback_reason(profile: UserProfile, rec: Recommendation) -> str:
     top_axis = max(AXIS_KEYS, key=lambda a: profile.ratios[a]["ratio"])
     label = profile.ratios[top_axis]["label"]
     genre = ", ".join(rec.movie.get("genre", [])[:2])
-    return f"{label} 취향과 잘 맞는 {genre} 작품이에요. (매칭 {rec.total_score}점)"
+    return f"{label} 취향과 잘 맞는 {genre} 작품이에요."
 
 
 def _fallback_copy(profile: UserProfile, recommendations: List[Recommendation]) -> Dict:

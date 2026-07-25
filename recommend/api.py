@@ -20,6 +20,8 @@ CINE:FIT MVTI 결과 API (FastAPI).
 """
 
 import os
+import random
+import unicodedata
 from typing import Dict, Optional
 
 from dotenv import find_dotenv, load_dotenv
@@ -31,8 +33,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from config import AXIS_KEYS, TOP_N
-from dataset import load_movies, load_questions, load_types
+from config import AXIS_KEYS, FRONT_DIR, TOP_N
+from dataset import load_movies, load_questions, load_types, read_json
 from engine import build_user_profile, generate_result_copy, recommend
 
 # ------------------------------------------------------------
@@ -59,6 +61,94 @@ def _sanitize_movies(movies):
 MOVIES = _sanitize_movies(load_movies())
 QUESTIONS = load_questions()
 TYPES = load_types()
+
+# ------------------------------------------------------------
+# 스낵 / 특별관 추천용 데이터
+#   - 이미지: FE/public/{snack,special_screen}/  (파일명 = 이름)
+#   - 스낵은 이미지가 있는 것만 랜덤 후보로 사용
+# ------------------------------------------------------------
+
+_ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_SNACK_IMG_DIR = os.path.join(_ROOT_DIR, "FE", "public", "snack")
+
+
+def _nfc(s: str) -> str:
+    return unicodedata.normalize("NFC", s)
+
+
+def _image_stems(folder: str):
+    if not os.path.isdir(folder):
+        return set()
+    exts = (".png", ".jpg", ".jpeg", ".webp")
+    return {_nfc(os.path.splitext(f)[0]) for f in os.listdir(folder) if f.lower().endswith(exts)}
+
+
+_snack_imgs = _image_stems(_SNACK_IMG_DIR)
+_snack_db = read_json(os.path.join(FRONT_DIR, "cgv_snack_db.json"), default=[])
+_SNACK_BY_NAME = {_nfc(s["name"]): s for s in _snack_db}
+
+
+def _movie_goods_names(movies):
+    """영화 snack 필드에 등장하는 스낵 = '굿즈'(미니언즈/모아나/포키/하츄핑 세트 등)."""
+    names = set()
+    for mv in movies:
+        s = mv.get("snack")
+        if not s:
+            continue
+        for x in (s if isinstance(s, list) else [s]):
+            names.add(_nfc(x))
+    return names
+
+
+GOODS_NAMES = _movie_goods_names(MOVIES)
+# 일반 스낵 랜덤 풀 = 이미지 있고 + 굿즈가 아닌 스낵
+REGULAR_SNACKS = [
+    s for s in _snack_db
+    if _nfc(s["name"]) in _snack_imgs and _nfc(s["name"]) not in GOODS_NAMES
+]
+# 특별관 이름 -> 설명
+SPECIAL_BY_NAME = {
+    s["name"]: s for s in read_json(os.path.join(FRONT_DIR, "cgv_special_db.json"), default=[])
+}
+
+
+def _snack_card(entry: Dict) -> Dict:
+    return {
+        "kind": "snack",
+        "name": entry["name"],
+        "description": entry.get("description", ""),
+        "price": entry.get("price"),
+    }
+
+
+def recommend_addons(movie: Dict):
+    """
+    영화마다 붙일 카드 2개(슬롯1, 슬롯2)를 반환.
+      슬롯1 = 스낵: 굿즈 있으면 그 굿즈, 없으면 일반스낵 랜덤 1개
+      슬롯2 = 상영관: 매칭 상영관 있으면 랜덤 1개, 없으면 일반스낵 랜덤 1개(슬롯1과 중복 X)
+    """
+    used = set()  # 이미 뽑은 스낵 이름(NFC) - 중복 방지
+
+    # 슬롯1: 굿즈 or 일반스낵
+    goods = movie.get("snack")
+    gname = _nfc(goods[0] if isinstance(goods, list) else goods) if goods else None
+    if gname and gname in _SNACK_BY_NAME:
+        slot1 = _snack_card(_SNACK_BY_NAME[gname])
+    else:
+        pick = random.choice(REGULAR_SNACKS)
+        slot1 = _snack_card(pick)
+    used.add(_nfc(slot1["name"]))
+
+    # 슬롯2: 상영관 or 일반스낵(중복 X)
+    specials = [s for s in (movie.get("special_screen") or []) if s in SPECIAL_BY_NAME]
+    if specials:
+        name = random.choice(specials)
+        slot2 = {"kind": "special", "name": name, "description": SPECIAL_BY_NAME[name].get("description", "")}
+    else:
+        pool = [s for s in REGULAR_SNACKS if _nfc(s["name"]) not in used] or REGULAR_SNACKS
+        slot2 = _snack_card(random.choice(pool))
+
+    return [slot1, slot2]
 
 # 임베딩은 옵션. 실패해도 서버는 뜨고, 축 유사도만으로 추천한다.
 MOVIE_EMBEDDINGS: Dict[int, list] = {}
@@ -146,13 +236,18 @@ def score(req: ScoreRequest):
     # 유형별 좋아하는/싫어하는 영화 특징 (types.json에 있으면 함께 반환)
     type_info = TYPES.get(profile.type_code, {})
 
+    movies_out = []
+    for rec in recommendations:
+        movies_out.append({
+            **rec.as_dict(),
+            "reason": reasons.get(rec.movie["movie_id"], ""),
+            "addons": recommend_addons(rec.movie),  # 카드 2개 [슬롯1(스낵/굿즈), 슬롯2(상영관/스낵)]
+        })
+
     return {
         **profile.as_dict(),
         "likes": type_info.get("likes", []),
         "dislikes": type_info.get("dislikes", []),
         "type_description": copy["type_description"],
-        "movies": [
-            {**rec.as_dict(), "reason": reasons.get(rec.movie["movie_id"], "")}
-            for rec in recommendations
-        ],
+        "movies": movies_out,
     }

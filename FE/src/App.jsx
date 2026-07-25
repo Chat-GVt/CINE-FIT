@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /* ── 디자인 토큰 (Figma: 캠크루 / 취향 기반 분석) ─────────────────── */
 const T = {
@@ -450,6 +450,149 @@ function SectionTitle({ children, style }) {
   );
 }
 
+/* ── 스낵/특별관 카드 ─────────────────────────────────────────────── */
+/* 특별관 이미지: /special_screen/<이름>.png, 스낵: /snack/<이름>.png (파일명=이름) */
+// 파일명 인코딩: 공백 등은 인코딩하되 '&'(%26)는 날것으로 둔다.
+//  Vite dev 정적 서버가 %26 경로를 못 찾기 때문.
+const encAsset = (s) => encodeURIComponent(s).replace(/%26/g, "&");
+
+// "OO%가 좋아했어요" 문구의 % 값 (계산값 아님, 디자인 고정값). 여기 숫자만 바꾸면 됨.
+const LIKE_PCT_MOVIE = [95, 91, 88]; // 영화 순위(1·2·3위)별
+const LIKE_PCT_ADDON = [95, 97];     // 스낵/특별관 카드(1·2번째)별
+
+function AddonCard({ typeCode, card, pct }) {
+  const isSpecial = card.kind === "special";
+  const img = isSpecial
+    ? `/special_screen/${encAsset(card.name)}.png`
+    : `/snack/${encAsset(card.name)}.png`;
+  return (
+    <div style={{ width: 137, background: "#fff", borderRadius: 5, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>
+      {/* 이미지 영역: 안 잘리게 contain. 특별관은 어두운 배경 */}
+      <div style={{ height: 100, display: "flex", alignItems: "center", justifyContent: "center", background: isSpecial ? "#0D1325" : "#f5f5f5" }}>
+        <img src={img} alt={card.name} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
+      </div>
+      <div style={{ padding: "8px 8px 10px" }}>
+        <p style={{ margin: 0, fontFamily: FONT, fontWeight: 600, fontSize: 11, lineHeight: 1.35, color: "#000" }}>
+          {isSpecial ? `${card.name} 특별관` : card.name}
+        </p>
+        <p style={{ margin: "2px 0 0", fontFamily: FONT, fontWeight: 400, fontSize: 10, lineHeight: 1.3, color: "#666" }}>
+          {card.description}
+        </p>
+        <p style={{ margin: "6px 0 0", fontFamily: FONT, fontWeight: 500, fontSize: 8, color: "#000" }}>
+          {typeCode}의 {pct}%가 좋아했어요.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ── 추천 영화 캐러셀 (좌우 스와이프) + 활성 영화의 스낵/특별관 ──────── */
+function MovieCarousel({ typeCode, movies }) {
+  const [active, setActive] = useState(0);
+  const ref = useRef(null);
+
+  // 스크롤 중앙에 가장 가까운 카드를 '활성'으로
+  const onScroll = () => {
+    const el = ref.current;
+    if (!el) return;
+    const center = el.scrollLeft + el.clientWidth / 2;
+    let best = 0, bestD = Infinity;
+    Array.from(el.children).forEach((ch, i) => {
+      const c = ch.offsetLeft + ch.offsetWidth / 2;
+      const d = Math.abs(c - center);
+      if (d < bestD) { bestD = d; best = i; }
+    });
+    setActive(best);
+  };
+
+  const cur = movies[active];
+  const cards = cur?.addons ?? [];
+
+  return (
+    <div style={{ padding: "26px 0 0" }}>
+      <SectionTitle>🍿 {typeCode} 유형이 좋아한 영화</SectionTitle>
+
+      {/* 캐러셀 */}
+      <div
+        ref={ref}
+        onScroll={onScroll}
+        style={{
+          display: "flex", gap: 18, overflowX: "auto", scrollSnapType: "x mandatory",
+          padding: "8px 88px 4px", scrollbarWidth: "none",
+        }}
+      >
+        {movies.map((m, i) => {
+          const on = i === active;
+          return (
+            <div key={m.title} style={{ flex: "0 0 auto", width: 184, scrollSnapAlign: "center", transition: "transform .25s", transform: on ? "scale(1)" : "scale(0.9)" }}>
+              <div style={{ position: "relative" }}>
+                <img
+                  src={m.img}
+                  alt={m.title}
+                  style={{
+                    width: 184, height: 263, objectFit: "cover", borderRadius: 10, display: "block",
+                    boxShadow: on ? "0 4px 8px 5px rgba(0,0,0,0.25)" : "0 2px 4px rgba(0,0,0,0.2)",
+                    opacity: on ? 1 : 0.65, transition: "opacity .25s",
+                  }}
+                />
+                <span style={{ position: "absolute", left: 10, bottom: 2, fontFamily: "'Irish Grover', cursive", fontWeight: 400, fontSize: 60, lineHeight: 1, color: "#fff", textShadow: "0 2px 6px rgba(0,0,0,0.55)" }}>
+                  {i + 1}
+                </span>
+              </div>
+              <p style={{ margin: "10px 0 2px", textAlign: "center", fontFamily: FONT, fontWeight: 700, fontSize: 16, letterSpacing: "-0.656px", color: "#000" }}>
+                {m.title}
+              </p>
+              <p style={{ margin: 0, textAlign: "center", fontFamily: FONT, fontWeight: 500, fontSize: 12, color: "#000" }}>
+                {typeCode}의 {LIKE_PCT_MOVIE[i] ?? 90}%가 좋아했어요.
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 활성 영화의 매칭 점수 + 추천 이유 */}
+      {cur && (
+        <div style={{ padding: "14px 30px 0", textAlign: "center" }}>
+          <p style={{ margin: "0 0 6px", fontFamily: FONT, fontWeight: 700, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.574px", color: T.red400 }}>
+            매칭 점수: {cur.score}점
+          </p>
+          <p style={{ margin: 0, fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.574px", color: "#000" }}>
+            {cur.reason}
+          </p>
+        </div>
+      )}
+
+      {/* 활성 영화의 스낵/특별관 */}
+      {cur && (
+        <div style={{ padding: "22px 20px 0" }}>
+          <p style={{ margin: "0 0 4px", textAlign: "center", fontFamily: FONT, fontWeight: 700, fontSize: 18, lineHeight: 1.3, letterSpacing: "-0.738px", color: "#000" }}>
+            ‘{cur.title}’와 함께 하면 좋은 것들
+          </p>
+          <p style={{ margin: 0, textAlign: "center", fontFamily: FONT, fontWeight: 600, fontSize: 12, color: "#000" }}>
+            캠크루 님의 취향으로 준비했어요!
+          </p>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 16 }}>
+            {cards.map((c, i) => <AddonCard key={c.kind + i} typeCode={typeCode} card={c} pct={LIKE_PCT_ADDON[i] ?? 90} />)}
+          </div>
+        </div>
+      )}
+
+      {/* 예매하러 가기 */}
+      <div style={{ display: "flex", justifyContent: "center", padding: "24px 0 28px" }}>
+        <button
+          style={{
+            width: 104, height: 25, borderRadius: 13, cursor: "pointer",
+            background: "rgba(255,255,255,0.7)", border: "1px solid #a3a3a3",
+            fontFamily: FONT, fontWeight: 500, fontSize: 12, letterSpacing: "-0.492px", color: "#000",
+          }}
+        >
+          예매하러 가기
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ResultScreen({ onBack, result }) {
   const typeCode = result?.type_code ?? "ILFP";
   const typeName = result?.type_name ?? "화려한 마블 히어로 형";
@@ -475,6 +618,7 @@ function ResultScreen({ onBack, result }) {
         img: m.poster_url,
         score: Math.round(m.total_score),
         reason: m.reason,
+        addons: m.addons ?? [],       // 카드 2개 [{kind:'snack'|'special', name, description, price}]
       }))
     : MOVIES;
 
@@ -485,7 +629,7 @@ function ResultScreen({ onBack, result }) {
     typeCode[0] === "I"
       ? `I_image/${typeCode}`
       : `R_image/${typeCode[1] === "L" ? "L" : "D"} 유형`;
-  const encPath = (p) => p.split("/").map(encodeURIComponent).join("/");
+  const encPath = (p) => p.split("/").map(encAsset).join("/");
 
   const characters = result?.characters?.length
     ? result.characters.map((c) => ({
@@ -570,45 +714,8 @@ function ResultScreen({ onBack, result }) {
           ))}
         </div>
 
-        {/* 추천 영화 */}
-        <div style={{ padding: "26px 20px 0" }}>
-          <SectionTitle>🍿 당신의 취향에 딱 맞는 영화에요!</SectionTitle>
-          {movies.map((m) => (
-            <div key={m.title} style={{ marginBottom: 30 }}>
-              <p style={{ margin: "0 0 14px", textAlign: "center", fontFamily: FONT, fontWeight: 600, fontSize: 16, lineHeight: 1.3, letterSpacing: "-0.656px", color: "#000" }}>
-                {m.title}
-              </p>
-              <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-                <img
-                  src={m.img}
-                  alt=""
-                  style={{ width: 150, height: 215, objectFit: "cover", borderRadius: 10, flexShrink: 0, boxShadow: "0 4px 8px 5px rgba(0,0,0,0.25)" }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: "0 0 4px", fontFamily: FONT, fontWeight: 700, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.574px", color: T.red400 }}>
-                    매칭 점수: {m.score}점
-                  </p>
-                  <p style={{ margin: 0, fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.574px", color: "#000" }}>
-                    {m.reason}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* 예매하러 가기 (Figma상 추천 목록 아래 1개) */}
-          <div style={{ display: "flex", justifyContent: "center", padding: "6px 0 28px" }}>
-            <button
-              style={{
-                width: 104, height: 25, borderRadius: 13, cursor: "pointer",
-                background: "rgba(255,255,255,0.7)", border: "1px solid #a3a3a3",
-                fontFamily: FONT, fontWeight: 500, fontSize: 12, letterSpacing: "-0.492px", color: "#000",
-              }}
-            >
-              예매하러 가기
-            </button>
-          </div>
-        </div>
+        {/* 추천 영화 캐러셀 + 스낵/특별관 */}
+        <MovieCarousel typeCode={typeCode} movies={movies} />
       </div>
 
       <CtaSection label="MVTI 공유하기" onClick={() => {}} />
