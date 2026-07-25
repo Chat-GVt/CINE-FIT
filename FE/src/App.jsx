@@ -497,6 +497,7 @@ function AddonCard({ card }) {
 /* ── 추천 영화 캐러셀 (좌우 스와이프) + 활성 영화의 스낵/특별관 ──────── */
 function MovieCarousel({ movies }) {
   const [active, setActive] = useState(0);
+  const [revealed, setRevealed] = useState({}); // {인덱스: true} → 그 포스터에 추천 이유 오버레이
   const ref = useRef(null);
 
   // 스크롤 중앙에 가장 가까운 카드를 '활성'으로
@@ -533,7 +534,10 @@ function MovieCarousel({ movies }) {
           const on = i === active;
           return (
             <div key={m.title} style={{ flex: "0 0 auto", width: 184, scrollSnapAlign: "center", transition: "transform .25s", transform: on ? "scale(1)" : "scale(0.9)" }}>
-              <div style={{ position: "relative" }}>
+              <div
+                style={{ position: "relative", width: 184, height: 263, cursor: "pointer" }}
+                onClick={() => setRevealed((r) => ({ ...r, [i]: !r[i] }))}
+              >
                 <img
                   src={m.img}
                   alt={m.title}
@@ -543,9 +547,20 @@ function MovieCarousel({ movies }) {
                     opacity: on ? 1 : 0.65, transition: "opacity .25s",
                   }}
                 />
-                <span style={{ position: "absolute", left: 10, bottom: 2, fontFamily: "'Irish Grover', cursive", fontWeight: 400, fontSize: 60, lineHeight: 1, color: "#fff", textShadow: "0 2px 6px rgba(0,0,0,0.55)" }}>
-                  {i + 1}
-                </span>
+                {/* 순위 숫자: 이유 볼 때는 숨김 */}
+                {!revealed[i] && (
+                  <span style={{ position: "absolute", left: 10, bottom: 2, fontFamily: "'Irish Grover', cursive", fontWeight: 400, fontSize: 60, lineHeight: 1, color: "#fff", textShadow: "0 2px 6px rgba(0,0,0,0.55)" }}>
+                    {i + 1}
+                  </span>
+                )}
+                {/* 추천 이유 오버레이 (포스터 크기 안에 가둠) */}
+                {revealed[i] && (
+                  <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 14px", overflow: "hidden", borderRadius: 10, background: "rgba(255,255,255,0.5)" }}>
+                    <p style={{ margin: 0, textAlign: "center", fontFamily: FONT, fontWeight: 600, fontSize: 12.5, lineHeight: 1.55, color: "#fff", whiteSpace: "pre-line", textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}>
+                      {twoBreaks(m.reason)}
+                    </p>
+                  </div>
+                )}
               </div>
               <p style={{ margin: "10px 0 2px", textAlign: "center", fontFamily: FONT, fontWeight: 700, fontSize: 16, letterSpacing: "-0.656px", color: "#000" }}>
                 {m.title}
@@ -555,14 +570,14 @@ function MovieCarousel({ movies }) {
         })}
       </div>
 
-      {/* 활성 영화의 매칭 점수 + 추천 이유 */}
+      {/* 활성 영화의 매칭 점수 + 클릭 안내 (추천 이유는 포스터를 누르면 오버레이로) */}
       {cur && (
         <div style={{ padding: "14px 30px 0", textAlign: "center" }}>
           <p style={{ margin: "0 0 6px", fontFamily: FONT, fontWeight: 700, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.574px", color: T.red400 }}>
             매칭 점수: {cur.score}점
           </p>
-          <p style={{ margin: 0, textAlign: "center", fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.7, letterSpacing: "-0.574px", color: "#000", whiteSpace: "pre-line" }}>
-            {twoBreaks(cur.reason)}
+          <p style={{ margin: 0, fontFamily: FONT, fontWeight: 500, fontSize: 12, lineHeight: 1.5, color: "#888" }}>
+            👆 포스터를 누르면 추천 이유가 나와요
           </p>
         </div>
       )}
