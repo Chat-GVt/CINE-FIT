@@ -5,8 +5,9 @@ pydantic
 python-dotenv
 openai
 
-# --- 자연어 취향 임베딩(선택, MVTI_USE_EMBEDDING=1일 때만 필요) ---
-# onnxruntime
-# huggingface_hub
-# tokenizers
-# numpy
+# --- 자연어 취향 임베딩 (KURE-v1) ---
+# 영화 description ↔ 사용자 자연어 취향 비교. 기본 ON (끄려면 env MVTI_USE_EMBEDDING=0)
+sentence-transformers
+torch
+# 참고: Windows에서 최신 torch가 경로길이(260자)로 설치 실패하면
+#       torch==2.5.1 처럼 버전을 지정해 설치 (예: pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu)

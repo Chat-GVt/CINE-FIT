@@ -4,3 +4,4 @@ __pycache__/
 axis_distribution.json
 axis_distribution.png
 recommendation_results.md
+recommend/movie_embeddings.json

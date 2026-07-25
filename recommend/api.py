@@ -41,7 +41,8 @@ from engine import build_user_profile, generate_result_copy, recommend
 # 시작 시 1회 로드 (데이터는 요청마다 다시 읽지 않는다)
 # ------------------------------------------------------------
 
-USE_EMBEDDING = os.environ.get("MVTI_USE_EMBEDDING") == "1"
+# 자연어 취향 임베딩 기본 ON (끄려면 MVTI_USE_EMBEDDING=0)
+USE_EMBEDDING = os.environ.get("MVTI_USE_EMBEDDING", "1") != "0"
 
 
 def _sanitize_movies(movies):

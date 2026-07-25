@@ -74,7 +74,7 @@ def main():
     # 3. 자연어 취향 임베딩
     user_embedding = None
     if profile.natural_language:
-        print("\nBGE-M3로 자연어 취향 임베딩 중...")
+        print("\nKURE로 자연어 취향 임베딩 중...")
         user_embedding = embed_text(profile.natural_language)
 
     # 4. 유사도 매칭 + 최종 점수

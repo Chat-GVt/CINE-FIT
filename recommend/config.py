@@ -40,8 +40,9 @@ W_EMBED = 0.3
 TOP_N = 3
 
 # ---------- 모델 ----------
-EMBEDDING_REPO = "BAAI/bge-m3"
-EMBEDDING_MAX_LENGTH = 512
+# 한국어 특화 임베딩(KURE-v1). 영화 description ↔ 사용자 자연어 취향 비교에 사용.
+EMBEDDING_REPO = "nlpai-lab/KURE-v1"
+EMBEDDING_MAX_LENGTH = 1024  # description이 길어 넉넉히
 
 OPENAI_MODEL = "gpt-4o-mini"
 OPENAI_API_KEY_ENV = "OPENAI_API_KEY"

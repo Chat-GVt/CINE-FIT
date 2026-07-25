@@ -1,8 +1,8 @@
 """
-데이터 계층: JSON 로딩 + BGE-M3 임베딩 + 영화 임베딩 캐시.
+데이터 계층: JSON 로딩 + KURE 임베딩 + 영화 임베딩 캐시.
 
   [1] JSON 입출력
-  [2] BGE-M3 임베딩 (onnxruntime 기반, torch 불필요)
+  [2] KURE 임베딩 (sentence-transformers 기반, torch 필요)
   [3] 영화 임베딩 캐시 - get_movie_embeddings() 하나로 로드/생성 자동 처리
 """
 
@@ -67,62 +67,41 @@ def load_user_input() -> Dict:
 
 
 # ============================================================
-# [2] BGE-M3 임베딩
+# [2] KURE-v1 임베딩 (sentence-transformers)
 # ============================================================
 
-_tokenizer = None
-_session = None
+_model = None
 
 
 def load_model():
-    """모델을 최초 1회만 로드하고 이후엔 캐시 재사용. import도 이때 처리."""
-    global _tokenizer, _session
-    if _tokenizer is None or _session is None:
-        import onnxruntime as ort
-        from huggingface_hub import hf_hub_download
-        from tokenizers import Tokenizer
+    """KURE 모델을 최초 1회만 로드하고 이후엔 캐시 재사용. import도 이때 처리."""
+    global _model
+    if _model is None:
+        from sentence_transformers import SentenceTransformer
 
-        tok_path = hf_hub_download(repo_id=EMBEDDING_REPO, filename="onnx/tokenizer.json")
-        model_path = hf_hub_download(repo_id=EMBEDDING_REPO, filename="onnx/model.onnx")
-        hf_hub_download(repo_id=EMBEDDING_REPO, filename="onnx/model.onnx_data")
-
-        _tokenizer = Tokenizer.from_file(tok_path)
-        _tokenizer.enable_truncation(max_length=EMBEDDING_MAX_LENGTH)
-        _session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
-    return _tokenizer, _session
+        _model = SentenceTransformer(EMBEDDING_REPO)
+        _model.max_seq_length = EMBEDDING_MAX_LENGTH
+    return _model
 
 
 def embed_text(text: str) -> List[float]:
-    """문장 하나를 1024차원 L2 정규화 벡터로. 영화/사용자 입력 모두 이 함수를 쓴다."""
-    import numpy as np
-
-    tokenizer, session = load_model()
-    enc = tokenizer.encode(text)
-    input_ids = np.array([enc.ids], dtype=np.int64)
-    attention_mask = np.array([enc.attention_mask], dtype=np.int64)
-
-    _, sentence_embedding = session.run(
-        ["token_embeddings", "sentence_embedding"],
-        {"input_ids": input_ids, "attention_mask": attention_mask},
-    )
-    vec = sentence_embedding[0]
-    norm = np.linalg.norm(vec)
-    if norm > 0:
-        vec = vec / norm
+    """문장 하나를 L2 정규화 임베딩 벡터로. 영화 description / 사용자 자연어 모두 이 함수를 쓴다."""
+    model = load_model()
+    vec = model.encode(text, normalize_embeddings=True)
     return vec.tolist()
 
 
 # ============================================================
 # [3] 영화 임베딩 캐시
 # ============================================================
-# 캐시 파일 형식 (data/movie_embeddings.json):
-#   {"model": "BAAI/bge-m3", "items": {"1": {"hash": "...", "vector": [...]}}}
-# 텍스트 해시를 같이 저장해서 줄거리/키워드가 갱신되면 그 영화만 자동 재임베딩한다.
+# 캐시 파일 형식 (recommend/movie_embeddings.json):
+#   {"model": "nlpai-lab/KURE-v1", "items": {"1": {"hash": "...", "vector": [...]}}}
+# 텍스트 해시를 같이 저장해서 description이 갱신되면 그 영화만 자동 재임베딩한다.
 
 
 def build_movie_text(movie: Dict) -> str:
-    """임베딩에 넣을 텍스트 = 줄거리 + 키워드."""
-    return movie["overview"] + " " + " ".join(movie.get("keywords", []))
+    """임베딩에 넣을 텍스트 = AI가 뽑은 영화 특성 설명(description). 없으면 줄거리로 대체."""
+    return (movie.get("description") or movie.get("overview", "")).strip()
 
 
 def _text_hash(text: str) -> str:
@@ -172,7 +151,7 @@ def get_movie_embeddings(
 
     if verbose:
         print(f"[embedding] 새로 임베딩할 영화 {len(stale)}편 / 전체 {len(movies)}편")
-        print("[embedding] BGE-M3 모델 로딩 중... (최초 1회는 다운로드로 몇 분 걸립니다)")
+        print("[embedding] KURE 모델 로딩 중... (최초 1회는 다운로드로 몇 분 걸립니다)")
     load_model()
 
     for i, movie in enumerate(stale, 1):
