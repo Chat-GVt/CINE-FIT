@@ -456,11 +456,7 @@ function SectionTitle({ children, style }) {
 //  Vite dev 정적 서버가 %26 경로를 못 찾기 때문.
 const encAsset = (s) => encodeURIComponent(s).replace(/%26/g, "&");
 
-// "OO%가 좋아했어요" 문구의 % 값 (계산값 아님, 디자인 고정값). 여기 숫자만 바꾸면 됨.
-const LIKE_PCT_MOVIE = [95, 91, 88]; // 영화 순위(1·2·3위)별
-const LIKE_PCT_ADDON = [95, 97];     // 스낵/특별관 카드(1·2번째)별
-
-function AddonCard({ typeCode, card, pct }) {
+function AddonCard({ card }) {
   const isSpecial = card.kind === "special";
   const img = isSpecial
     ? `/special_screen/${encAsset(card.name)}.png`
@@ -478,16 +474,13 @@ function AddonCard({ typeCode, card, pct }) {
         <p style={{ margin: "2px 0 0", fontFamily: FONT, fontWeight: 400, fontSize: 10, lineHeight: 1.3, color: "#666" }}>
           {card.description}
         </p>
-        <p style={{ margin: "6px 0 0", fontFamily: FONT, fontWeight: 500, fontSize: 8, color: "#000" }}>
-          {typeCode}의 {pct}%가 좋아했어요.
-        </p>
       </div>
     </div>
   );
 }
 
 /* ── 추천 영화 캐러셀 (좌우 스와이프) + 활성 영화의 스낵/특별관 ──────── */
-function MovieCarousel({ typeCode, movies }) {
+function MovieCarousel({ movies }) {
   const [active, setActive] = useState(0);
   const ref = useRef(null);
 
@@ -510,7 +503,7 @@ function MovieCarousel({ typeCode, movies }) {
 
   return (
     <div style={{ padding: "26px 0 0" }}>
-      <SectionTitle>🍿 {typeCode} 유형이 좋아한 영화</SectionTitle>
+      <SectionTitle>🍿 캠크루님을 위한 상영작 Top3</SectionTitle>
 
       {/* 캐러셀 */}
       <div
@@ -542,9 +535,6 @@ function MovieCarousel({ typeCode, movies }) {
               <p style={{ margin: "10px 0 2px", textAlign: "center", fontFamily: FONT, fontWeight: 700, fontSize: 16, letterSpacing: "-0.656px", color: "#000" }}>
                 {m.title}
               </p>
-              <p style={{ margin: 0, textAlign: "center", fontFamily: FONT, fontWeight: 500, fontSize: 12, color: "#000" }}>
-                {typeCode}의 {LIKE_PCT_MOVIE[i] ?? 90}%가 좋아했어요.
-              </p>
             </div>
           );
         })}
@@ -572,7 +562,7 @@ function MovieCarousel({ typeCode, movies }) {
             캠크루 님의 취향으로 준비했어요!
           </p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 16 }}>
-            {cards.map((c, i) => <AddonCard key={c.kind + i} typeCode={typeCode} card={c} pct={LIKE_PCT_ADDON[i] ?? 90} />)}
+            {cards.map((c, i) => <AddonCard key={c.kind + i} card={c} />)}
           </div>
         </div>
       )}
@@ -715,7 +705,7 @@ function ResultScreen({ onBack, result }) {
         </div>
 
         {/* 추천 영화 캐러셀 + 스낵/특별관 */}
-        <MovieCarousel typeCode={typeCode} movies={movies} />
+        <MovieCarousel movies={movies} />
       </div>
 
       <CtaSection label="MVTI 공유하기" onClick={() => {}} />
