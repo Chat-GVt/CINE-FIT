@@ -468,6 +468,9 @@ function SectionTitle({ children, style }) {
 //  Vite dev 정적 서버가 %26 경로를 못 찾기 때문.
 const encAsset = (s) => encodeURIComponent(s).replace(/%26/g, "&");
 
+// 문장 사이 줄바꿈을 2번(빈 줄)으로. GPT의 \n을 문단 간격처럼 벌린다. (whiteSpace: pre-line과 함께 사용)
+const twoBreaks = (s) => (s ?? "").split(/\n+/).map((x) => x.trim()).filter(Boolean).join("\n\n");
+
 function AddonCard({ card }) {
   const isSpecial = card.kind === "special";
   const img = isSpecial
@@ -558,8 +561,8 @@ function MovieCarousel({ movies }) {
           <p style={{ margin: "0 0 6px", fontFamily: FONT, fontWeight: 700, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.574px", color: T.red400 }}>
             매칭 점수: {cur.score}점
           </p>
-          <p style={{ margin: 0, fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.574px", color: "#000" }}>
-            {cur.reason}
+          <p style={{ margin: 0, textAlign: "center", fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.7, letterSpacing: "-0.574px", color: "#000", whiteSpace: "pre-line" }}>
+            {twoBreaks(cur.reason)}
           </p>
         </div>
       )}
@@ -607,7 +610,7 @@ function ResultScreen({ onBack, result }) {
     return { ...row, pct: r.ratio / 100, fillFrom: r.pole === row.lk ? "left" : "right" };
   });
 
-  const typeDesc = result?.type_description ?? TYPE_DESC;
+  const typeDesc = twoBreaks(result?.type_description ?? TYPE_DESC);
 
   // 유형별 좋아하는/싫어하는 영화 특징 (백엔드 types.json). 없으면 데모용.
   const likes = result?.likes?.length ? result.likes : LIKES;
@@ -668,7 +671,7 @@ function ResultScreen({ onBack, result }) {
         </div>
 
         {/* 유형 설명 */}
-        <p style={{ margin: "18px 36px 0", textAlign: "center", fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.5, letterSpacing: "0.0798px", color: "#000", whiteSpace: "pre-line" }}>
+        <p style={{ margin: "18px 30px 0", textAlign: "center", fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.75, letterSpacing: "0.0798px", color: "#000", whiteSpace: "pre-line" }}>
           {typeDesc}
         </p>
 
