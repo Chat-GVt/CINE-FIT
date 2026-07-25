@@ -1,0 +1,12 @@
+# --- MVTI API 필수 ---
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+openai
+
+# --- 자연어 취향 임베딩(선택, MVTI_USE_EMBEDDING=1일 때만 필요) ---
+# onnxruntime
+# huggingface_hub
+# tokenizers
+# numpy

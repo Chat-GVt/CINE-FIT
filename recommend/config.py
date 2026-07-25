@@ -5,14 +5,16 @@ CINE:FIT 추천 파이프라인 설정
 import os
 
 # ---------- 경로 ----------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
+# recommend/ 의 부모(프로젝트 루트) 아래 front/ 에 데이터가 있다.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))     # .../CINE-FIT-main/recommend
+ROOT_DIR = os.path.dirname(BASE_DIR)                       # .../CINE-FIT-main
+FRONT_DIR = os.path.join(ROOT_DIR, "front")
 
-MOVIE_DB_PATH = os.path.join(DATA_DIR, "movie_db_scored.json")
-MOVIE_EMBEDDING_PATH = os.path.join(DATA_DIR, "movie_embeddings.json")  # 자동 생성/갱신되는 캐시
-QUESTION_PATH = os.path.join(DATA_DIR, "questions.json")
-TYPE_PATH = os.path.join(DATA_DIR, "types.json")          # 16유형 이름 + 대표 캐릭터
-USER_INPUT_PATH = os.path.join(DATA_DIR, "user_input.json")
+MOVIE_DB_PATH = os.path.join(FRONT_DIR, "movie_db_all.json")
+MOVIE_EMBEDDING_PATH = os.path.join(BASE_DIR, "movie_embeddings.json")  # 자동 생성/갱신되는 캐시
+QUESTION_PATH = os.path.join(FRONT_DIR, "questions.json")
+TYPE_PATH = os.path.join(FRONT_DIR, "types.json")         # 16유형 이름 + 대표 캐릭터
+USER_INPUT_PATH = os.path.join(BASE_DIR, "user_input.json")
 
 # ---------- MVTI 4축 ----------
 # key = 점수가 높을 때의 극

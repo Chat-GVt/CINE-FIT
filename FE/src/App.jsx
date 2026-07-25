@@ -379,8 +379,8 @@ function AxisRow({ a }) {
           <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 16, lineHeight: 1.3 }}>{a.lk}</div>
           <div style={{ fontFamily: FONT, fontWeight: 500, fontSize: 12, lineHeight: 1.3 }}>{a.ln}</div>
         </div>
-        <div style={{ flex: 1, height: 8, background: "#d9d9d9", borderRadius: 5, overflow: "hidden" }}>
-          <div style={{ height: 8, width: `${a.pct * 100}%`, background: a.color, borderRadius: 5 }} />
+        <div style={{ position: "relative", flex: 1, height: 8, background: "#d9d9d9", borderRadius: 5, overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, [a.fillFrom ?? "left"]: 0, height: 8, width: `${a.pct * 100}%`, background: a.color, borderRadius: 5 }} />
         </div>
         <div style={{ width: 56, textAlign: "center", flexShrink: 0, color: "#6c6c6c" }}>
           <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 16, lineHeight: 1.3 }}>{a.rk}</div>
@@ -453,11 +453,48 @@ function SectionTitle({ children, style }) {
 function ResultScreen({ onBack, result }) {
   const typeCode = result?.type_code ?? "ILFP";
   const typeName = result?.type_name ?? "화려한 마블 히어로 형";
+
+  // 게이지: 백엔드 ratios[극키]={pole,label,ratio} 사용.
+  //  - pole이 왼쪽 극(I/L/F/P)이면 왼쪽에서, 반대 극(R/D/S/U)이면 오른쪽에서 채운다.
   const axisRows = AXIS_ROWS.map((row) => {
-    const scores = result?.axis_scores?.[row.axisKey];
-    const pct = scores ? scores[row.lk] / 100 : row.demoPct;
-    return { ...row, pct };
+    const r = result?.ratios?.[row.lk];
+    if (!r) return { ...row, pct: row.demoPct, fillFrom: "left" };
+    return { ...row, pct: r.ratio / 100, fillFrom: r.pole === row.lk ? "left" : "right" };
   });
+
+  const typeDesc = result?.type_description ?? TYPE_DESC;
+
+  // 유형별 좋아하는/싫어하는 영화 특징 (백엔드 types.json). 없으면 데모용.
+  const likes = result?.likes?.length ? result.likes : LIKES;
+  const dislikes = result?.dislikes?.length ? result.dislikes : DISLIKES;
+
+  // 추천 영화: 백엔드 결과(poster_url/total_score) -> UI 형태로 정규화. 없으면 데모용 MOVIES.
+  const movies = result?.movies?.length
+    ? result.movies.map((m) => ({
+        title: m.title,
+        img: m.poster_url,
+        score: Math.round(m.total_score),
+        reason: m.reason,
+      }))
+    : MOVIES;
+
+  // 닮은 캐릭터: 백엔드 characters(name+work) -> 이름으로 이미지 매칭.
+  //  이미지는 UI/image 구조 그대로 FE/public/characters/ 아래에 있음.
+  //    I계열 → I_image/<유형코드>/,  R계열 → R_image/(L|D) 유형/
+  const charDir =
+    typeCode[0] === "I"
+      ? `I_image/${typeCode}`
+      : `R_image/${typeCode[1] === "L" ? "L" : "D"} 유형`;
+  const encPath = (p) => p.split("/").map(encodeURIComponent).join("/");
+
+  const characters = result?.characters?.length
+    ? result.characters.map((c) => ({
+        img: `/characters/${encPath(`${charDir}/${c.name}`)}.png`,
+        name: c.name,
+        from: `<${c.work}>`,
+        desc: c.desc ?? null, // types.json의 캐릭터별 설명
+      }))
+    : CHARACTERS;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: T.neutral0 }}>
@@ -486,7 +523,7 @@ function ResultScreen({ onBack, result }) {
 
         {/* 유형 설명 */}
         <p style={{ margin: "18px 36px 0", textAlign: "center", fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.5, letterSpacing: "0.0798px", color: "#000", whiteSpace: "pre-line" }}>
-          {TYPE_DESC}
+          {typeDesc}
         </p>
 
         {/* 취향 리스트 */}
@@ -495,7 +532,7 @@ function ResultScreen({ onBack, result }) {
             이런 영화, 못 참지 👇
           </p>
           <ul style={{ margin: 0, paddingLeft: 20 }}>
-            {LIKES.map((t) => (
+            {likes.map((t) => (
               <li key={t} style={{ fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.738px", color: "#000" }}>{t}</li>
             ))}
           </ul>
@@ -503,7 +540,7 @@ function ResultScreen({ onBack, result }) {
             이런 건 좀 힘들어요 👇
           </p>
           <ul style={{ margin: 0, paddingLeft: 20 }}>
-            {DISLIKES.map((t) => (
+            {dislikes.map((t) => (
               <li key={t} style={{ fontFamily: FONT, fontWeight: 500, fontSize: 14, lineHeight: 1.6, letterSpacing: "-0.738px", color: "#000" }}>{t}</li>
             ))}
           </ul>
@@ -512,19 +549,22 @@ function ResultScreen({ onBack, result }) {
         {/* 닮은 캐릭터 */}
         <div style={{ padding: "44px 20px 0" }}>
           <SectionTitle>🎬 나와 닮은 영화 캐릭터는?</SectionTitle>
-          {CHARACTERS.map((c) => (
+          {characters.map((c) => (
             <div key={c.name} style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 22 }}>
               <div style={{ width: 130, flexShrink: 0, display: "flex", justifyContent: "center" }}>
-                <img src={c.img} alt="" style={{ width: c.w, maxWidth: "100%", height: "auto", display: "block" }} />
+                {/* 고정 박스(110×120) 안에 원본 비율 그대로, 안 잘리고 안 찌그러지게 */}
+                <img src={c.img} alt={c.name} style={{ width: 110, height: 120, objectFit: "contain", display: "block" }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: "0 0 6px", fontFamily: FONT, lineHeight: 1.3, color: "#000" }}>
                   <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: "-0.816px" }}>{c.name}</span>
                   <span style={{ fontWeight: 400, fontSize: 10, color: "#797979", letterSpacing: "-0.51px" }}> - {c.from}</span>
                 </p>
-                <p style={{ margin: 0, fontFamily: FONT, fontWeight: 400, fontSize: 12, lineHeight: 1.3, color: "#000", whiteSpace: "pre-line" }}>
-                  {c.desc}
-                </p>
+                {c.desc && (
+                  <p style={{ margin: 0, fontFamily: FONT, fontWeight: 400, fontSize: 12, lineHeight: 1.3, color: "#000", whiteSpace: "pre-line" }}>
+                    {c.desc}
+                  </p>
+                )}
               </div>
             </div>
           ))}
@@ -533,7 +573,7 @@ function ResultScreen({ onBack, result }) {
         {/* 추천 영화 */}
         <div style={{ padding: "26px 20px 0" }}>
           <SectionTitle>🍿 당신의 취향에 딱 맞는 영화에요!</SectionTitle>
-          {MOVIES.map((m) => (
+          {movies.map((m) => (
             <div key={m.title} style={{ marginBottom: 30 }}>
               <p style={{ margin: "0 0 14px", textAlign: "center", fontFamily: FONT, fontWeight: 600, fontSize: 16, lineHeight: 1.3, letterSpacing: "-0.656px", color: "#000" }}>
                 {m.title}
@@ -598,7 +638,7 @@ async function submitMvti(payload) {
     const res = await fetch(`${MVTI_API_BASE}/mvti/score`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers: payload.answers }),
+      body: JSON.stringify({ answers: payload.answers, natural_language: payload.natural_language }),
     });
     if (!res.ok) {
       console.error("[MVTI 채점 실패]", res.status, await res.text());
