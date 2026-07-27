@@ -63,11 +63,6 @@ def cosine_list(vec_a: Sequence[float], vec_b: Sequence[float]) -> float:
     return dot / (norm_a * norm_b)
 
 
-def to_percent(cosine_score: float) -> float:
-    """-1~1 코사인 값을 0~100 표시용 점수로."""
-    return round((cosine_score + 1) / 2 * 100, 1)
-
-
 # ============================================================
 # [2] 사용자 MVTI
 # ============================================================
@@ -224,9 +219,10 @@ def resolve_weights(has_embedding: bool, has_axis_signal: bool = True) -> Tuple[
     쓸 수 있는 신호에 따라 (축 가중치, 임베딩 가중치) 결정.
     - 자연어 입력이 없으면      -> 축 100%
     - 응답이 전부 중립(50점)이면 -> 임베딩 100%
+    - 둘 다 없으면(설문 중립 + 자연어 없음)  -> 축 100%
+      (이 경우 axis_vector가 0벡터라 모든 영화가 동점이 되므로,
+       recommend()에서 인기도(P축) 기준으로 대체 정렬한다.)
     """
-    if not has_embedding and not has_axis_signal:
-        raise ValueError("축 응답도 중립이고 자연어 입력도 없어 추천 근거가 없습니다.")
     if not has_embedding:
         return 1.0, 0.0
     if not has_axis_signal:
@@ -235,30 +231,33 @@ def resolve_weights(has_embedding: bool, has_axis_signal: bool = True) -> Tuple[
     return W_AXIS / total, W_EMBED / total
 
 
-def score_movie(
+def _raw_similarities(
     profile: UserProfile,
     user_embedding: Optional[List[float]],
     movie: Dict,
     movie_embeddings: Dict[int, List[float]],
-    weights: Tuple[float, float],
-) -> Recommendation:
-    """영화 1편에 대한 두 유사도 계산 + 가중합."""
-    w_axis, w_embed = weights
-
-    # 1) MVTI 4축 유사도
+) -> Tuple[float, float]:
+    """영화 1편에 대한 두 원본 코사인 유사도(-1~1, 정규화 전)."""
     axis_sim = cosine_dict(profile.axis_vector, centerize_axis(movie["mvti"]["axis_scores"]))
 
-    # 2) 텍스트 임베딩 유사도
     movie_embedding = movie_embeddings.get(movie["movie_id"])
     embed_sim = cosine_list(user_embedding, movie_embedding) if (user_embedding and movie_embedding) else 0.0
 
-    return Recommendation(
-        movie=movie,
-        total_score=to_percent(w_axis * axis_sim + w_embed * embed_sim),
-        axis_score=to_percent(axis_sim),
-        embed_score=to_percent(embed_sim),
-        weights=weights,
-    )
+    return axis_sim, embed_sim
+
+
+def _minmax_normalize(values: List[float]) -> List[float]:
+    """
+    후보 영화군 내 상대적 위치로 0~1 재조정.
+    축 유사도(4차원)는 -1~1을 넓게 쓰는 반면 텍스트 임베딩 유사도(1024차원)는
+    보통 좁은 구간에 몰려 있어(고차원 임베딩 특유의 anisotropy), 원본 코사인 값을
+    그대로 가중합하면 가중치 비율과 실제 영향력이 어긋난다. 이를 맞추기 위해
+    이번 추천 배치 안에서의 최솟값~최댓값 기준으로 두 값을 같은 스케일로 맞춘다.
+    """
+    lo, hi = min(values), max(values)
+    if hi - lo < 1e-9:
+        return [0.5] * len(values)  # 전부 동일하면 변별력이 없으므로 중립값
+    return [(v - lo) / (hi - lo) for v in values]
 
 
 def recommend(
@@ -270,9 +269,29 @@ def recommend(
 ) -> List[Recommendation]:
     """영화 DB 전체를 점수화하고 상위 top_n편을 반환."""
     weights = resolve_weights(bool(user_embedding), profile.has_axis_signal)
+    w_axis, w_embed = weights
+
+    if not user_embedding and not profile.has_axis_signal:
+        # 설문도 중립, 자연어도 없음 -> 개인화 신호가 전혀 없으므로 인기도(P축) 기준으로 대체
+        popular = sorted(movies, key=lambda m: m["mvti"]["axis_scores"]["P"], reverse=True)[:top_n]
+        return [
+            Recommendation(movie=m, total_score=m["mvti"]["axis_scores"]["P"], axis_score=0.0, embed_score=0.0, weights=weights)
+            for m in popular
+        ]
+
+    raw = [_raw_similarities(profile, user_embedding, movie, movie_embeddings) for movie in movies]
+    axis_norm = _minmax_normalize([r[0] for r in raw])
+    embed_norm = _minmax_normalize([r[1] for r in raw])
+
     scored = [
-        score_movie(profile, user_embedding, movie, movie_embeddings, weights)
-        for movie in movies
+        Recommendation(
+            movie=movie,
+            total_score=round((w_axis * a + w_embed * e) * 100, 1),
+            axis_score=round(a * 100, 1),
+            embed_score=round(e * 100, 1),
+            weights=weights,
+        )
+        for movie, a, e in zip(movies, axis_norm, embed_norm)
     ]
     scored.sort(key=lambda r: r.total_score, reverse=True)
     return scored[:top_n]
