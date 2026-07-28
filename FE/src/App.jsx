@@ -75,32 +75,6 @@ const SCALE = [
 ];
 
 /* ── 공통 파츠 ────────────────────────────────────────────────────── */
-function StatusBar() {
-  return (
-    <div style={{ height: 44, background: T.neutral0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px 0 28px", flexShrink: 0 }}>
-      <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: "#000", letterSpacing: "-0.2px" }}>9:41</span>
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-        <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
-          <rect x="0" y="7" width="3" height="4" rx="0.8" fill="#000" />
-          <rect x="5" y="5" width="3" height="6" rx="0.8" fill="#000" />
-          <rect x="10" y="3" width="3" height="8" rx="0.8" fill="#000" />
-          <rect x="15" y="1" width="3" height="10" rx="0.8" fill="#d1d1d1" />
-        </svg>
-        <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-          <path d="M8 10.8a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8Z" fill="#000" />
-          <path d="M8 5.2c1.5 0 2.9.55 3.95 1.46l-1.3 1.35A3.9 3.9 0 0 0 8 7.2c-1 0-1.93.36-2.65.96L4.05 6.8A5.9 5.9 0 0 1 8 5.2Z" fill="#000" />
-          <path d="M8 1.5c2.5 0 4.8.93 6.55 2.46l-1.3 1.35A7.9 7.9 0 0 0 8 3.5c-2 0-3.83.73-5.25 1.94L1.45 4A9.9 9.9 0 0 1 8 1.5Z" fill="#000" />
-        </svg>
-        <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
-          <rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="#000" strokeOpacity="0.4" />
-          <rect x="2" y="2" width="18" height="8" rx="1.5" fill="#000" />
-          <path d="M23.5 4v4a2.2 2.2 0 0 0 0-4Z" fill="#000" fillOpacity="0.4" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
 function TopAppBar({ title, onBack }) {
   return (
     <div style={{ height: 51, background: T.neutral0, display: "flex", alignItems: "center", gap: 16, padding: "8px 12px 8px 24px", flexShrink: 0 }}>
@@ -172,7 +146,6 @@ function StepCard({ c }) {
 function IntroScreen({ onStart }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", ...BG_GRADIENT }}>
-      <StatusBar />
       <TopAppBar title="나만의 MVTI 테스트" onBack={() => {}} />
       <div style={{ flex: 1, overflowY: "auto", padding: "40px 20px 20px" }}>
         <p style={{ margin: 0, fontFamily: FONT, fontWeight: 800, fontSize: 22, lineHeight: 1.4, color: T.neutral900 }}>
@@ -229,7 +202,6 @@ function QuestionScreen({ page, answers, onAnswer, onBack, onNext }) {
   const pageAnswered = qs.every((_, i) => answers[page * 5 + i] != null);
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: T.neutral0 }}>
-      <StatusBar />
       <TopAppBar title="나만의 MVTI 테스트" onBack={onBack} />
       <ProgressBar step={page + 1} />
       <div style={{ flex: 1, overflowY: "auto", ...BG_GRADIENT }}>
@@ -262,7 +234,6 @@ function FreeTextScreen({ value, onChange, onBack, onNext, onSkip }) {
   const filled = value.trim().length > 0;
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", ...BG_GRADIENT }}>
-      <StatusBar />
       <TopAppBar title="나만의 MVTI 테스트" onBack={onBack} />
       <div style={{ flex: 1, overflowY: "auto", padding: "40px 20px 20px" }}>
         <p style={{ margin: 0, fontFamily: FONT, fontWeight: 800, fontSize: 22, lineHeight: 1.4, color: T.neutral900 }}>
@@ -329,7 +300,6 @@ function LoadingFinalScreen({ onBack, onDone, ready }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", ...BG_GRADIENT }}>
       <style>{`@keyframes mvtiSpin { to { transform: rotate(360deg); } }`}</style>
-      <StatusBar />
       <TopAppBar title="나만의 MVTI 테스트" onBack={onBack} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 28, padding: "0 20px" }}>
         <div style={{ position: "relative", width: 200, height: 200, flexShrink: 0 }}>
@@ -662,7 +632,6 @@ function ResultScreen({ onBack, result }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: T.neutral0 }}>
-      <StatusBar />
       <TopAppBar title="나만의 MVTI 테스트" onBack={onBack} />
 
       <div style={{ flex: 1, overflowY: "auto", ...BG_GRADIENT }}>
