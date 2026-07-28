@@ -785,11 +785,16 @@ export default function App() {
   const [answers, setAnswers] = useState({});
   const [freeText, setFreeText] = useState("");
   const [scale, setScale] = useState(1);
+  const [isPhone, setIsPhone] = useState(false); // 실제 모바일에서는 목업 프레임 없이 화면을 꽉 채운다
   const [mvtiResult, setMvtiResult] = useState(null);
   const [resultReady, setResultReady] = useState(false); // API 응답 도착 여부(에러여도 true)
 
   useEffect(() => {
-    const fit = () => setScale(Math.min(1, (window.innerHeight - 24) / 800, (window.innerWidth - 24) / 360));
+    const fit = () => {
+      const phone = window.innerWidth <= 480;
+      setIsPhone(phone);
+      setScale(phone ? 1 : Math.min(1, (window.innerHeight - 24) / 800, (window.innerWidth - 24) / 360));
+    };
     fit();
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
@@ -816,8 +821,14 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#ececec", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT }}>
-      <div style={{ width: 360, height: 800, transform: `scale(${scale})`, transformOrigin: "center", background: "#fff", borderRadius: 24, overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.18)" }}>
+    <div style={ isPhone
+      ? { height: "100dvh", background: "#fff", fontFamily: FONT }
+      : { minHeight: "100vh", background: "#ececec", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT }
+    }>
+      <div style={ isPhone
+        ? { width: "100%", height: "100%", background: "#fff", overflow: "hidden" }
+        : { width: 360, height: 800, transform: `scale(${scale})`, transformOrigin: "center", background: "#fff", borderRadius: 24, overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.18)" }
+      }>
         {screen === "intro" && <IntroScreen onStart={() => setScreen(0)} />}
         {typeof screen === "number" && (
           <QuestionScreen
